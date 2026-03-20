@@ -342,7 +342,7 @@
       <div class="section-header">Finns risk för:</div>
       <div class="checklist-section" id="risk-section"></div>
 
-      <div class="section-header">Var finns:</div>
+      <div class="section-header">Hittar du:</div>
       <div class="checklist-section" id="varfinns-section"></div>
 
       <div class="section-header">Kommentarer / övrigt</div>
@@ -544,7 +544,9 @@ function setTri(sectionId, idx, val) {
   row.querySelector(`.tri-btn.${val}`).classList.add('active');
   row.dataset.val = val;
   const comment = document.getElementById(`comment-${sectionId}-${idx}`);
-  if (val === 'no') {
+  // varfinns-section har omvänd logik: Ja kräver kommentar
+  const triggerVal = sectionId === 'varfinns-section' ? 'yes' : 'no';
+  if (val === triggerVal) {
     comment.classList.add('visible');
     comment.classList.remove('missing');
   } else {
@@ -633,7 +635,7 @@ async function saveInv() {
     }));
   };
 
-  // Validera att alla Nej-svar har kommentar
+  // Validera att alla Nej-svar (och Ja för varfinns) har kommentar
   const sections = [
     { id: 'tankt-section', items: TANKT_ITEMS },
     { id: 'risk-section', items: RISK_ITEMS },
@@ -641,17 +643,18 @@ async function saveInv() {
   ];
   let missingComments = false;
   sections.forEach(({ id, items }) => {
+    const triggerVal = id === 'varfinns-section' ? 'yes' : 'no';
     items.forEach((_, i) => {
       const row = document.getElementById(`row-${id}-${i}`);
       const comment = document.getElementById(`comment-${id}-${i}`);
-      if (row?.dataset.val === 'no' && !comment?.value.trim()) {
+      if (row?.dataset.val === triggerVal && !comment?.value.trim()) {
         comment.classList.add('missing');
         missingComments = true;
       }
     });
   });
   if (missingComments) {
-    showToast('⚠️ Fyll i kommentar för alla Nej-svar', 'error');
+    showToast('⚠️ Fyll i kommentar för markerade svar', 'error');
     btn.disabled = false; btn.textContent = 'Spara inventering';
     return;
   }
@@ -790,21 +793,22 @@ function showDetail(id, isAdmin) {
       ${r.atgarder ? `<div class="detail-section"><div class="detail-section-title">Förslag åtgärder</div><div class="detail-text">${r.atgarder}</div></div>` : ''}
     `;
   } else {
-    const renderChecks = arr => (arr||[]).map(item =>
-      `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+    const renderChecks = (arr, reversed) => (arr||[]).map(item => {
+      const triggerVal = reversed ? 'yes' : 'no';
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
         <div style="display:flex;gap:10px;font-size:13px">
           <span style="flex-shrink:0">${svarEmoji(item.svar)}</span><span>${item.fraga}</span>
         </div>
-        ${item.svar === 'no' && item.kommentar ? `<div style="margin-top:6px;margin-left:22px;font-size:12px;color:var(--accent2);background:rgba(232,93,74,0.08);border-radius:6px;padding:6px 10px;">💬 ${item.kommentar}</div>` : ''}
-      </div>`
-    ).join('');
+        ${item.svar === triggerVal && item.kommentar ? `<div style="margin-top:6px;margin-left:22px;font-size:12px;color:var(--accent2);background:rgba(232,93,74,0.08);border-radius:6px;padding:6px 10px;">💬 ${item.kommentar}</div>` : ''}
+      </div>`;
+    }).join('');
     html = `
       <div class="card-type inv" style="display:inline-block;margin-bottom:12px">Riskinventering</div>
       <div class="detail-title">${r.plats || 'Okänd plats'}</div>
       <div class="detail-meta">${r.datum || ''} · ${r.anvandare_namn || 'Anonym'}</div>
-      <div class="detail-section"><div class="detail-section-title">Har du tänkt på</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.tankt)}</div></div>
-      <div class="detail-section"><div class="detail-section-title">Finns risk för</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.risker)}</div></div>
-      <div class="detail-section"><div class="detail-section-title">Var finns</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.varfinns)}</div></div>
+      <div class="detail-section"><div class="detail-section-title">Har du tänkt på</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.tankt, false)}</div></div>
+      <div class="detail-section"><div class="detail-section-title">Finns risk för</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.risker, false)}</div></div>
+      <div class="detail-section"><div class="detail-section-title">Hittar du</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.varfinns, true)}</div></div>
       ${r.kommentar ? `<div class="detail-section"><div class="detail-section-title">Kommentarer</div><div class="detail-text">${r.kommentar}</div></div>` : ''}
     `;
   }
