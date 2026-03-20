@@ -544,8 +544,9 @@ function setTri(sectionId, idx, val) {
   row.querySelector(`.tri-btn.${val}`).classList.add('active');
   row.dataset.val = val;
   const comment = document.getElementById(`comment-${sectionId}-${idx}`);
-  // varfinns-section har omvänd logik: Ja kräver kommentar
-  const triggerVal = sectionId === 'varfinns-section' ? 'yes' : 'no';
+  // varfinns-section = normal (nej kräver kommentar)
+  // risk-section = omvänd (ja kräver kommentar, eftersom ja = risken finns)
+  const triggerVal = sectionId === 'risk-section' ? 'yes' : 'no';
   if (val === triggerVal) {
     comment.classList.add('visible');
     comment.classList.remove('missing');
@@ -643,7 +644,7 @@ async function saveInv() {
   ];
   let missingComments = false;
   sections.forEach(({ id, items }) => {
-    const triggerVal = id === 'varfinns-section' ? 'yes' : 'no';
+    const triggerVal = id === 'risk-section' ? 'yes' : 'no';
     items.forEach((_, i) => {
       const row = document.getElementById(`row-${id}-${i}`);
       const comment = document.getElementById(`comment-${id}-${i}`);
@@ -807,8 +808,8 @@ function showDetail(id, isAdmin) {
       <div class="detail-title">${r.plats || 'Okänd plats'}</div>
       <div class="detail-meta">${r.datum || ''} · ${r.anvandare_namn || 'Anonym'}</div>
       <div class="detail-section"><div class="detail-section-title">Har du tänkt på</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.tankt, false)}</div></div>
-      <div class="detail-section"><div class="detail-section-title">Finns risk för</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.risker, false)}</div></div>
-      <div class="detail-section"><div class="detail-section-title">Hittar du</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.varfinns, true)}</div></div>
+      <div class="detail-section"><div class="detail-section-title">Finns risk för</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.risker, true)}</div></div>
+      <div class="detail-section"><div class="detail-section-title">Hittar du</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.varfinns, false)}</div></div>
       ${r.kommentar ? `<div class="detail-section"><div class="detail-section-title">Kommentarer</div><div class="detail-text">${r.kommentar}</div></div>` : ''}
     `;
   }
