@@ -13,6 +13,17 @@
     --bg: #0f0f1a; --surface: #1a1a2e; --surface2: #242438;
     --border: #2e2e4a; --accent: #f5a623; --accent2: #e85d4a;
     --green: #4ade80; --text: #e8e8f0; --muted: #7878a0; --radius: 12px;
+    --nav-bg: rgba(15,15,26,0.92);
+  }
+  body.theme-dim {
+    --bg: #1e2130; --surface: #272d40; --surface2: #313855;
+    --border: #3d4560; --text: #dde3f5; --muted: #8090b8;
+    --nav-bg: rgba(30,33,48,0.92);
+  }
+  body.theme-light {
+    --bg: #eef0f5; --surface: #ffffff; --surface2: #f4f5f8;
+    --border: #d0d4e0; --text: #1a1f33; --muted: #6b7494;
+    --nav-bg: rgba(238,240,245,0.92);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
@@ -20,7 +31,7 @@
   /* NAV */
   .nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(15,15,26,0.92); backdrop-filter: blur(12px);
+    background: var(--nav-bg); backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     display: flex; align-items: center; padding: 0 16px; height: 56px;
   }
@@ -237,7 +248,20 @@
     padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(245,166,35,0.3);
   }
 
-  .error-msg { color: var(--accent2); font-size: 13px; text-align: center; margin-top: 10px; }
+  /* THEME PICKER */
+  .theme-picker {
+    display: flex; gap: 8px; margin-bottom: 24px; justify-content: center;
+  }
+  .theme-btn {
+    flex: 1; padding: 10px 6px; border-radius: var(--radius);
+    border: 2px solid var(--border); background: var(--surface2);
+    color: var(--muted); font-size: 12px; font-weight: 600;
+    cursor: pointer; text-align: center; transition: all .2s;
+  }
+  .theme-btn .theme-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .theme-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
+
+
 
   /* FILTER */
   .filter-row { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -256,6 +280,17 @@
   <div class="login-logo">🛡</div>
   <div class="login-title">Riskcheck</div>
   <div class="login-sub">Logga in för att fortsätta</div>
+  <div class="theme-picker">
+    <button class="theme-btn" id="theme-dark" onclick="setTheme('dark')">
+      <span class="theme-icon">🌑</span>Mörkt
+    </button>
+    <button class="theme-btn" id="theme-dim" onclick="setTheme('dim')">
+      <span class="theme-icon">🌗</span>Dimmigt
+    </button>
+    <button class="theme-btn" id="theme-light" onclick="setTheme('light')">
+      <span class="theme-icon">☀️</span>Ljust
+    </button>
+  </div>
   <div class="login-box">
     <div class="field">
       <label>Namn</label>
@@ -416,6 +451,21 @@ let currentDetailId = null;
 let currentDetailSource = 'mine';
 let activeForm = 'inv';
 let adminFilter = 'alla';
+
+// ── TEMA ──────────────────────────────────────────────────────
+function setTheme(theme) {
+  document.body.classList.remove('theme-dim', 'theme-light');
+  if (theme === 'dim') document.body.classList.add('theme-dim');
+  if (theme === 'light') document.body.classList.add('theme-light');
+  localStorage.setItem('riskcheck_theme', theme);
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('theme-' + theme).classList.add('active');
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('riskcheck_theme') || 'dark';
+  setTheme(saved);
+}
 
 // ── SUPABASE HELPERS ──────────────────────────────────────────
 async function sbGet(table, filters = '') {
@@ -932,6 +982,8 @@ function showToast(msg, type) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
+
+loadTheme();
 </script>
 </body>
 </html>
