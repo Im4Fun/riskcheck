@@ -2,6 +2,8 @@
 
 A mobile-first web app for digital risk and incident reporting, built as a single HTML file with a [Supabase](https://supabase.com) backend. Designed to replace paper-based risk checklists in industrial and shift-based work environments.
 
+> 🇸🇪 This app is in Swedish. All forms, labels, and checklist questions are in Swedish, and data is stored in Swedish regardless of the user's device language.
+
 ---
 
 ## Features
