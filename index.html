@@ -807,7 +807,7 @@ function renderStats() {
       <div class="stat-card"><div class="stat-number">${total}</div><div class="stat-label">Totalt</div></div>
       <div class="stat-card"><div class="stat-number" style="color:var(--accent2)">${risks}</div><div class="stat-label">Risk/Tillbud</div></div>
       <div class="stat-card"><div class="stat-number" style="color:var(--green)">${invs}</div><div class="stat-label">Inventeringar</div></div>
-      <div class="stat-card"><div class="stat-number" style="font-size:18px;color:var(--muted)">${allRecords.length ? allRecords[allRecords.length-1].datum || '—' : '—'}</div><div class="stat-label">Första rapport</div></div>
+      <div class="stat-card"><div class="stat-number" style="font-size:18px;color:var(--muted)">${allRecords.length ? allRecords[0].datum || '—' : '—'}</div><div class="stat-label">Senaste rapport</div></div>
     </div>
     <div class="section-header">Orsaker (Risk/Tillbud)</div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">${orsakHTML}</div>
