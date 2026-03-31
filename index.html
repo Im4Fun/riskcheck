@@ -28,7 +28,6 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-  /* NAV */
   .nav {
     position: sticky; top: 0; z-index: 100;
     background: var(--nav-bg); backdrop-filter: blur(12px);
@@ -36,24 +35,30 @@
     display: flex; align-items: center; padding: 0 16px; height: 56px;
   }
   .nav-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; flex: 1; }
-  .nav-title span { display: none; }
   .nav-user { font-size: 12px; color: var(--muted); text-align: right; }
   .nav-user strong { display: block; color: var(--text); font-size: 13px; }
   .logout-btn { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 4px 0 0; }
   .logout-btn:active { color: var(--accent2); }
 
-  /* LOGIN */
   #login-screen {
     min-height: 100vh; display: flex; flex-direction: column;
     align-items: center; justify-content: center; padding: 32px 24px;
   }
   .login-logo { font-size: 48px; margin-bottom: 8px; }
   .login-title { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-  .login-title span { color: var(--accent); }
-  .login-sub { font-size: 14px; color: var(--muted); margin-bottom: 36px; }
+  .login-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
   .login-box { width: 100%; max-width: 360px; }
 
-  /* TABS */
+  .theme-picker { display: flex; gap: 8px; margin-bottom: 24px; justify-content: center; }
+  .theme-btn {
+    flex: 1; padding: 10px 6px; border-radius: var(--radius);
+    border: 2px solid var(--border); background: var(--surface2);
+    color: var(--muted); font-size: 12px; font-weight: 600;
+    cursor: pointer; text-align: center; transition: all .2s;
+  }
+  .theme-btn .theme-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .theme-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
+
   .tab-bar {
     display: flex; border-bottom: 1px solid var(--border);
     background: var(--surface); overflow-x: auto; scrollbar-width: none;
@@ -69,11 +74,9 @@
   }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* PAGES */
   .page { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
   .page.active { display: block; }
 
-  /* FORM */
   .section-header {
     font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
     text-transform: uppercase; color: var(--accent); margin: 24px 0 12px;
@@ -81,7 +84,7 @@
   .section-header:first-child { margin-top: 8px; }
   .field { margin-bottom: 12px; }
   label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
-  input[type="text"], input[type="date"], input[type="time"], input[type="password"], textarea, select {
+  input[type="text"], input[type="date"], input[type="time"], input[type="password"], textarea {
     width: 100%; background: var(--surface2); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 11px 14px; color: var(--text);
     font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none;
@@ -91,7 +94,6 @@
   textarea { resize: vertical; min-height: 90px; }
   .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-  /* CHECKBOXES */
   .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .check-item {
     display: flex; align-items: center; gap: 10px;
@@ -109,7 +111,6 @@
   .check-item.checked .check-box svg { display: block; }
   .check-label { font-size: 13px; font-weight: 500; line-height: 1.3; }
 
-  /* CHECKLIST */
   .checklist-section {
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: var(--radius); overflow: hidden; margin-bottom: 12px;
@@ -131,17 +132,16 @@
   .checklist-text { font-size: 13px; flex: 1; line-height: 1.4; }
 
   .no-comment {
-    display: none; margin-top: 8px;
-    width: 100%; background: rgba(232,93,74,0.08);
-    border: 1px solid var(--accent2); border-radius: 8px;
-    padding: 9px 12px; color: var(--text);
+    display: none; margin-top: 8px; width: 100%;
+    background: rgba(232,93,74,0.08); border: 1px solid var(--accent2);
+    border-radius: 8px; padding: 9px 12px; color: var(--text);
     font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none;
-    resize: vertical; min-height: 60px;
-    transition: border-color .2s;
+    resize: vertical; min-height: 60px; transition: border-color .2s;
   }
   .no-comment.visible { display: block; }
   .no-comment:focus { border-color: #ff8a78; }
   .no-comment.missing { border-color: #ff0000; background: rgba(255,0,0,0.1); }
+
   .btn-primary {
     width: 100%; padding: 15px; background: var(--accent); color: #000;
     font-weight: 700; font-size: 15px; border: none; border-radius: var(--radius);
@@ -157,7 +157,6 @@
   .btn-secondary:active { border-color: var(--accent); }
   .btn-danger { background: var(--accent2); color: #fff; border-color: var(--accent2); }
 
-  /* FORM SELECTOR */
   .form-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
   .form-select-btn {
     padding: 14px 10px; border-radius: var(--radius); border: 2px solid var(--border);
@@ -167,7 +166,6 @@
   .form-select-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
   .form-select-icon { font-size: 24px; display: block; margin-bottom: 4px; }
 
-  /* CARDS */
   .card {
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
@@ -186,7 +184,6 @@
   .card-desc { font-size: 13px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .card-reporter { font-size: 11px; color: var(--muted); margin-top: 6px; }
 
-  /* STATS */
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
   .stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 14px; text-align: center; }
   .stat-number { font-size: 32px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--accent); }
@@ -197,7 +194,6 @@
   .bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .5s ease; }
   .bar-count { font-size: 12px; color: var(--text); font-family: 'DM Mono', monospace; width: 20px; text-align: right; }
 
-  /* DETAIL */
   .detail { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
   .detail.active { display: block; }
   .back-btn {
@@ -210,7 +206,6 @@
   .detail-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700; }
   .detail-text { font-size: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; line-height: 1.6; }
 
-  /* TOAST */
   .toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
     background: var(--green); color: #000; padding: 12px 20px; border-radius: 30px;
@@ -219,7 +214,6 @@
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* SPINNER */
   .spinner {
     display: inline-block; width: 18px; height: 18px;
     border: 2px solid rgba(0,0,0,0.3); border-top-color: #000;
@@ -227,12 +221,10 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* EMPTY */
   .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
   .empty-icon { font-size: 48px; margin-bottom: 12px; }
   .empty-text { font-size: 14px; }
 
-  /* EXPORT */
   .export-row { display: flex; gap: 8px; }
   .export-row .btn-secondary { flex: 1; }
 
@@ -241,29 +233,12 @@
     background: var(--accent2); color: #fff; border-radius: 10px;
     font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 4px;
   }
-
   .admin-badge {
     display: inline-block; background: rgba(245,166,35,0.15); color: var(--accent);
     font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
     padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(245,166,35,0.3);
   }
-
-  /* THEME PICKER */
-  .theme-picker {
-    display: flex; gap: 8px; margin-bottom: 24px; justify-content: center;
-  }
-  .theme-btn {
-    flex: 1; padding: 10px 6px; border-radius: var(--radius);
-    border: 2px solid var(--border); background: var(--surface2);
-    color: var(--muted); font-size: 12px; font-weight: 600;
-    cursor: pointer; text-align: center; transition: all .2s;
-  }
-  .theme-btn .theme-icon { font-size: 20px; display: block; margin-bottom: 4px; }
-  .theme-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
-
-
-
-  /* FILTER */
+  .error-msg { color: var(--accent2); font-size: 13px; text-align: center; margin-top: 10px; }
   .filter-row { display: flex; gap: 8px; margin-bottom: 12px; }
   .filter-btn {
     flex: 1; padding: 9px 8px; border-radius: 8px; border: 1px solid var(--border);
@@ -271,16 +246,11 @@
     cursor: pointer; text-align: center; transition: all .15s;
   }
   .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
-
-  .footer {
-    text-align: center; padding: 24px 16px 32px;
-    font-size: 11px; color: var(--muted); letter-spacing: 0.5px;
-  }
+  .footer { text-align: center; padding: 24px 16px 32px; font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-logo">🛡</div>
   <div class="login-title">Riskcheck</div>
@@ -297,23 +267,15 @@
     </button>
   </div>
   <div class="login-box">
-    <div class="field">
-      <label>Namn</label>
-      <input type="text" id="login-namn" placeholder="Ditt namn" autocomplete="name">
-    </div>
-    <div class="field">
-      <label>PIN-kod</label>
-      <input type="password" id="login-pin" placeholder="••••" maxlength="10" inputmode="numeric" autocomplete="current-password">
-    </div>
+    <div class="field"><label>Namn</label><input type="text" id="login-namn" placeholder="Ditt namn" autocomplete="name"></div>
+    <div class="field"><label>PIN-kod</label><input type="password" id="login-pin" placeholder="••••" maxlength="10" inputmode="numeric" autocomplete="current-password"></div>
     <div id="login-error" class="error-msg" style="display:none"></div>
     <button class="btn-primary" id="login-btn" onclick="doLogin()">Logga in</button>
   </div>
   <div class="footer">© 2026 | CARÅ</div>
 </div>
 
-<!-- MAIN APP (hidden until login) -->
 <div id="app" style="display:none">
-
   <div class="nav">
     <div class="nav-title">Riskcheck</div>
     <div class="nav-user">
@@ -322,14 +284,13 @@
     </div>
   </div>
 
-  <div class="tab-bar" id="tab-bar">
+  <div class="tab-bar">
     <button class="tab active" onclick="showTab('ny')">+ Ny rapport</button>
     <button class="tab" onclick="showTab('lista')">Rapporter <span class="badge" id="count-badge">0</span></button>
     <button class="tab admin-only" onclick="showTab('admin')" style="display:none">Admin</button>
     <button class="tab admin-only" onclick="showTab('statistik')" style="display:none">Statistik</button>
   </div>
 
-  <!-- NY RAPPORT -->
   <div class="page active" id="page-ny">
     <div class="form-selector">
       <button class="form-select-btn active" id="btn-inv" onclick="selectForm('inv')">
@@ -340,7 +301,6 @@
       </button>
     </div>
 
-    <!-- RISK FORM -->
     <div id="form-risk" style="display:none">
       <div class="section-header">Grundinformation</div>
       <div class="row-2">
@@ -348,10 +308,8 @@
         <div class="field"><label>Klockslag</label><input type="time" id="r-tid"></div>
       </div>
       <div class="field"><label>Plats</label><input type="text" id="r-plats" placeholder="T.ex. Hallbyggnad A, linje 3"></div>
-
       <div class="section-header">Beskriv risken/tillbudet och ev. konsekvenser</div>
       <div class="field"><textarea id="r-beskrivning" placeholder="Beskriv vad som hände eller riskerar att hända..." rows="4"></textarea></div>
-
       <div class="section-header">Orsak — brister i</div>
       <div class="check-grid" id="orsak-grid">
         <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Utrustning"><div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Utrustning</span></label>
@@ -362,30 +320,24 @@
         <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Skyddsorganisation"><div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Skyddsorganisation</span></label>
         <label class="check-item" onclick="toggleCheck(this)" style="grid-column:1/-1"><input type="checkbox" value="Övrigt"><div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">Övrigt</span></label>
       </div>
-
       <div class="section-header">Förslag åtgärder</div>
       <div class="field"><textarea id="r-atgarder" placeholder="Beskriv föreslagna åtgärder..." rows="3"></textarea></div>
       <button class="btn-primary" id="save-risk-btn" onclick="saveRisk()">Spara rapport</button>
       <button class="btn-secondary" onclick="clearRiskForm()">Rensa formulär</button>
     </div>
 
-    <!-- INV FORM -->
     <div id="form-inv">
       <div class="section-header">Grundinformation</div>
       <div class="row-2">
         <div class="field"><label>Datum</label><input type="date" id="i-datum"></div>
         <div class="field"><label>Plats</label><input type="text" id="i-plats" placeholder="Plats"></div>
       </div>
-
       <div class="section-header">Har du tänkt på:</div>
       <div class="checklist-section" id="tankt-section"></div>
-
       <div class="section-header">Finns risk för:</div>
       <div class="checklist-section" id="risk-section"></div>
-
       <div class="section-header">Hittar du:</div>
       <div class="checklist-section" id="varfinns-section"></div>
-
       <div class="section-header">Kommentarer / övrigt</div>
       <div class="field"><textarea id="i-kommentar" placeholder="Ev. kommentarer..." rows="3"></textarea></div>
       <button class="btn-primary" id="save-inv-btn" onclick="saveInv()">Spara inventering</button>
@@ -393,12 +345,8 @@
     </div>
   </div>
 
-  <!-- MINA RAPPORTER -->
-  <div class="page" id="page-lista">
-    <div id="lista-content"></div>
-  </div>
+  <div class="page" id="page-lista"><div id="lista-content"></div></div>
 
-  <!-- ADMIN -->
   <div class="page" id="page-admin">
     <div class="section-header" style="margin-top:8px">Alla rapporter</div>
     <div class="filter-row">
@@ -409,7 +357,6 @@
     <div id="admin-content"></div>
   </div>
 
-  <!-- STATISTIK -->
   <div class="page" id="page-statistik">
     <div id="stats-content"></div>
     <div class="section-header" style="margin-top:24px">Exportera all data</div>
@@ -420,7 +367,6 @@
     <p style="font-size:12px;color:var(--muted);margin-top:12px;text-align:center;">Exporterar all data från databasen.</p>
   </div>
 
-  <!-- DETAIL VIEW -->
   <div class="detail" id="detail-view">
     <button class="back-btn" onclick="hideDetail()">← Tillbaka</button>
     <div id="detail-content"></div>
@@ -428,7 +374,6 @@
   </div>
 
   <div class="footer">© 2026 | CARÅ</div>
-
 </div>
 
 <div class="toast" id="toast"></div>
@@ -469,13 +414,12 @@ function setTheme(theme) {
   document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('theme-' + theme).classList.add('active');
 }
-
 function loadTheme() {
   const saved = localStorage.getItem('riskcheck_theme') || 'dark';
   setTheme(saved);
 }
 
-// ── SUPABASE HELPERS ──────────────────────────────────────────
+// ── SUPABASE ──────────────────────────────────────────────────
 async function sbGet(table, filters = '') {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filters}&order=sparad.desc`, {
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
@@ -483,20 +427,15 @@ async function sbGet(table, filters = '') {
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
-
 async function sbInsert(table, data) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
     method: 'POST',
-    headers: {
-      apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json', Prefer: 'return=representation'
-    },
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
     body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
-
 async function sbDelete(table, id) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: 'DELETE',
@@ -509,15 +448,10 @@ async function sbDelete(table, id) {
 async function doLogin() {
   const namn = document.getElementById('login-namn').value.trim();
   const pin = document.getElementById('login-pin').value.trim();
-  const errEl = document.getElementById('login-error');
   const btn = document.getElementById('login-btn');
-
   if (!namn || !pin) { showLoginError('Fyll i namn och PIN.'); return; }
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>';
-  errEl.style.display = 'none';
-
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  document.getElementById('login-error').style.display = 'none';
   try {
     const users = await sbGet('anvandare', `namn=ilike.${encodeURIComponent(namn)}&pin=eq.${encodeURIComponent(pin)}`);
     if (!users.length) { showLoginError('Fel namn eller PIN-kod.'); return; }
@@ -525,35 +459,24 @@ async function doLogin() {
     startApp();
   } catch(e) {
     showLoginError('Kunde inte ansluta till databasen. Kontrollera internetanslutningen.');
-    console.error(e);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Logga in';
-  }
+  } finally { btn.disabled = false; btn.textContent = 'Logga in'; }
 }
-
 function showLoginError(msg) {
   const el = document.getElementById('login-error');
   el.textContent = msg; el.style.display = 'block';
 }
-
 document.getElementById('login-pin').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
 function startApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('nav-namn').textContent = currentUser.namn;
-
   if (currentUser.roll === 'admin') {
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
     document.getElementById('nav-namn').insertAdjacentHTML('afterend', ' <span class="admin-badge">Admin</span>');
   }
-
-  setTodayDefaults();
-  buildInvChecklist();
-  loadMyRecords();
+  setTodayDefaults(); buildInvChecklist(); loadMyRecords();
 }
-
 function doLogout() {
   currentUser = null; myRecords = []; allRecords = [];
   document.getElementById('app').style.display = 'none';
@@ -573,17 +496,13 @@ function setTodayDefaults() {
   document.getElementById('r-tid').value = now;
   document.getElementById('i-datum').value = today;
 }
-
 function buildInvChecklist() {
   buildSection('tankt-section', TANKT_ITEMS);
   buildSection('risk-section', RISK_ITEMS);
   buildSection('varfinns-section', VARFINNS_ITEMS);
 }
-
 function buildSection(id, items) {
   document.getElementById(id).innerHTML = items.map((item, i) => {
-    // Avspärrning (idx 6, tankt-section): Ja triggar kommentar
-    // Ensamarbete (idx 9, tankt-section): Ja visar tilläggsfråga
     const isEnsamarbete = id === 'tankt-section' && i === 9;
     const extraHTML = isEnsamarbete ? `
       <div class="sub-question" id="sub-ensamarbete" style="display:none;width:100%;margin-top:8px;padding:10px 12px;background:rgba(245,166,35,0.06);border:1px solid var(--border);border-radius:8px;">
@@ -608,56 +527,37 @@ function buildSection(id, items) {
     </div>`;
   }).join('');
 }
-
 function setEnsamarbete(val) {
   const sub = document.getElementById('sub-ensamarbete');
   sub.querySelectorAll('.tri-btn').forEach(b => b.classList.remove('active'));
   sub.querySelector(`.tri-btn.${val}`).classList.add('active');
   sub.dataset.kommunikation = val;
   const comment = document.getElementById('comment-tankt-section-9');
-  if (val === 'no') {
-    comment.classList.add('visible');
-    comment.classList.remove('missing');
-  } else {
-    comment.classList.remove('visible', 'missing');
-    comment.value = '';
-  }
+  if (val === 'no') { comment.classList.add('visible'); comment.classList.remove('missing'); }
+  else { comment.classList.remove('visible', 'missing'); comment.value = ''; }
 }
-
 function setTri(sectionId, idx, val) {
   const row = document.getElementById(`row-${sectionId}-${idx}`);
   row.querySelectorAll(':scope > div > .tri-toggle .tri-btn').forEach(b => b.classList.remove('active'));
   row.querySelector(`:scope > div > .tri-toggle .tri-btn.${val}`).classList.add('active');
   row.dataset.val = val;
-
-  // Ensamarbete (tankt idx 9): Ja visar tilläggsfråga, annars dölj
   if (sectionId === 'tankt-section' && idx === 9) {
     const sub = document.getElementById('sub-ensamarbete');
-    if (val === 'yes') {
-      sub.style.display = 'block';
-    } else {
+    if (val === 'yes') { sub.style.display = 'block'; }
+    else {
       sub.style.display = 'none';
       sub.querySelectorAll('.tri-btn').forEach(b => b.classList.remove('active'));
       delete sub.dataset.kommunikation;
-      const c = document.getElementById('comment-ensamarbete');
+      const c = document.getElementById('comment-tankt-section-9');
       c.classList.remove('visible','missing'); c.value = '';
     }
     return;
   }
-
   const comment = document.getElementById(`comment-${sectionId}-${idx}`);
   if (!comment) return;
-
-  // Avspärrning (tankt idx 6) och risk-section: Ja triggar kommentar
-  // Övriga (inkl varfinns): Nej triggar kommentar
   const triggerVal = (sectionId === 'risk-section' || (sectionId === 'tankt-section' && idx === 6)) ? 'yes' : 'no';
-  if (val === triggerVal) {
-    comment.classList.add('visible');
-    comment.classList.remove('missing');
-  } else {
-    comment.classList.remove('visible', 'missing');
-    comment.value = '';
-  }
+  if (val === triggerVal) { comment.classList.add('visible'); comment.classList.remove('missing'); }
+  else { comment.classList.remove('visible', 'missing'); comment.value = ''; }
 }
 
 // ── TABS ──────────────────────────────────────────────────────
@@ -665,18 +565,12 @@ function showTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('detail-view').classList.remove('active');
-
-  const tabMap = { ny:0, lista:1, admin:2, statistik:3 };
-  const tabEls = document.querySelectorAll('.tab');
-  // Find and activate matching tab
-  tabEls.forEach(t => { if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${tab}'`)) t.classList.add('active'); });
+  document.querySelectorAll('.tab').forEach(t => { if (t.getAttribute('onclick')?.includes(`'${tab}'`)) t.classList.add('active'); });
   document.getElementById('page-'+tab).classList.add('active');
-
   if (tab === 'lista') loadMyRecords();
   if (tab === 'admin') loadAllRecords();
-  if (tab === 'statistik') { loadAllRecords().then(renderStats); }
+  if (tab === 'statistik') loadAllRecords().then(renderStats);
 }
-
 function selectForm(type) {
   activeForm = type;
   document.getElementById('btn-risk').classList.toggle('active', type==='risk');
@@ -684,7 +578,6 @@ function selectForm(type) {
   document.getElementById('form-risk').style.display = type==='risk' ? 'block' : 'none';
   document.getElementById('form-inv').style.display = type==='inv' ? 'block' : 'none';
 }
-
 function toggleCheck(el) {
   event.preventDefault();
   const cb = el.querySelector('input');
@@ -697,59 +590,35 @@ async function saveRisk() {
   const plats = document.getElementById('r-plats').value.trim();
   const beskrivning = document.getElementById('r-beskrivning').value.trim();
   if (!plats || !beskrivning) { showToast('⚠️ Fyll i plats och beskrivning', 'error'); return; }
-
   const btn = document.getElementById('save-risk-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sparar...';
-
   const orsaker = Array.from(document.querySelectorAll('#orsak-grid .check-item.checked input')).map(i => i.value);
-
   try {
     await sbInsert('rapporter', {
-      anvandare_id: currentUser.id,
-      anvandare_namn: currentUser.namn,
-      typ: 'risk',
-      datum: document.getElementById('r-datum').value,
-      tid: document.getElementById('r-tid').value,
-      plats, beskrivning, atgarder: document.getElementById('r-atgarder').value.trim(),
-      orsaker
+      anvandare_id: currentUser.id, anvandare_namn: currentUser.namn, typ: 'risk',
+      datum: document.getElementById('r-datum').value, tid: document.getElementById('r-tid').value,
+      plats, beskrivning, atgarder: document.getElementById('r-atgarder').value.trim(), orsaker
     });
-    clearRiskForm();
-    showToast('✓ Rapport sparad');
-    updateBadge();
-  } catch(e) {
-    showToast('Kunde inte spara. Kontrollera anslutningen.', 'error');
-    console.error(e);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Spara rapport';
-  }
+    clearRiskForm(); showToast('✓ Rapport sparad'); updateBadge();
+  } catch(e) { showToast('Kunde inte spara. Kontrollera anslutningen.', 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Spara rapport'; }
 }
 
 async function saveInv() {
   const plats = document.getElementById('i-plats').value.trim();
   if (!plats) { showToast('⚠️ Fyll i plats', 'error'); return; }
-
   const btn = document.getElementById('save-inv-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sparar...';
-
   const getSection = (id, items) => {
     const rows = document.querySelectorAll(`#${id} .checklist-row`);
     return items.map((item, i) => {
-      // Ensamarbete: spara kommunikationssvar separat
       if (id === 'tankt-section' && i === 9) {
         const sub = document.getElementById('sub-ensamarbete');
-        const kommunikation = sub?.dataset.kommunikation || null;
-        const kommentar = document.getElementById('comment-ensamarbete')?.value.trim() || '';
-        return { fraga: item, svar: rows[i]?.dataset.val || null, kommunikation, kommentar };
+        return { fraga: item, svar: rows[i]?.dataset.val || null, kommunikation: sub?.dataset.kommunikation || null, kommentar: document.getElementById('comment-tankt-section-9')?.value.trim() || '' };
       }
-      return {
-        fraga: item,
-        svar: rows[i]?.dataset.val || null,
-        kommentar: document.getElementById(`comment-${id}-${i}`)?.value.trim() || ''
-      };
+      return { fraga: item, svar: rows[i]?.dataset.val || null, kommentar: document.getElementById(`comment-${id}-${i}`)?.value.trim() || '' };
     });
   };
-
-  // Validera kommentarer
   const sections = [
     { id: 'tankt-section', items: TANKT_ITEMS },
     { id: 'risk-section', items: RISK_ITEMS },
@@ -760,85 +629,51 @@ async function saveInv() {
     items.forEach((_, i) => {
       const row = document.getElementById(`row-${id}-${i}`);
       const val = row?.dataset.val;
-
-      // Ensamarbete: validera tilläggsfrågan
       if (id === 'tankt-section' && i === 9) {
         if (val === 'yes') {
           const sub = document.getElementById('sub-ensamarbete');
-          if (!sub.dataset.kommunikation) {
-            sub.style.border = '1px solid var(--accent2)';
-            missingComments = true;
-          } else if (sub.dataset.kommunikation === 'no') {
+          if (!sub.dataset.kommunikation) { sub.style.border = '1px solid var(--accent2)'; missingComments = true; }
+          else if (sub.dataset.kommunikation === 'no') {
             const c = document.getElementById('comment-tankt-section-9');
             if (!c.value.trim()) { c.classList.add('missing'); missingComments = true; }
           }
         }
         return;
       }
-
-      // Avspärrning (idx 6) och risk-section: Ja triggar
       const triggerVal = (id === 'risk-section' || (id === 'tankt-section' && i === 6)) ? 'yes' : 'no';
       const comment = document.getElementById(`comment-${id}-${i}`);
-      if (val === triggerVal && !comment?.value.trim()) {
-        comment.classList.add('missing');
-        missingComments = true;
-      }
+      if (val === triggerVal && !comment?.value.trim()) { comment.classList.add('missing'); missingComments = true; }
     });
   });
   if (missingComments) {
     showToast('⚠️ Fyll i kommentar för markerade svar', 'error');
-    btn.disabled = false; btn.textContent = 'Spara inventering';
-    return;
+    btn.disabled = false; btn.textContent = 'Spara inventering'; return;
   }
-
   try {
     await sbInsert('rapporter', {
-      anvandare_id: currentUser.id,
-      anvandare_namn: currentUser.namn,
-      typ: 'inv',
-      datum: document.getElementById('i-datum').value,
-      plats,
+      anvandare_id: currentUser.id, anvandare_namn: currentUser.namn, typ: 'inv',
+      datum: document.getElementById('i-datum').value, plats,
       kommentar: document.getElementById('i-kommentar').value.trim(),
       tankt: getSection('tankt-section', TANKT_ITEMS),
       risker: getSection('risk-section', RISK_ITEMS),
       varfinns: getSection('varfinns-section', VARFINNS_ITEMS)
     });
-    clearInvForm();
-    showToast('✓ Inventering sparad');
-    updateBadge();
-  } catch(e) {
-    showToast('Kunde inte spara. Kontrollera anslutningen.', 'error');
-    console.error(e);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Spara inventering';
-  }
+    clearInvForm(); showToast('✓ Inventering sparad'); updateBadge();
+  } catch(e) { showToast('Kunde inte spara. Kontrollera anslutningen.', 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Spara inventering'; }
 }
 
 function clearRiskForm() {
   ['r-plats','r-beskrivning','r-atgarder'].forEach(id => document.getElementById(id).value = '');
-  document.querySelectorAll('#orsak-grid .check-item.checked').forEach(el => {
-    el.classList.remove('checked'); el.querySelector('input').checked = false;
-  });
+  document.querySelectorAll('#orsak-grid .check-item.checked').forEach(el => { el.classList.remove('checked'); el.querySelector('input').checked = false; });
   setTodayDefaults();
 }
-
 function clearInvForm() {
   ['i-plats','i-kommentar'].forEach(id => document.getElementById(id).value = '');
-  document.querySelectorAll('.checklist-row').forEach(r => {
-    r.querySelectorAll(':scope > div > .tri-toggle .tri-btn').forEach(b => b.classList.remove('active'));
-    delete r.dataset.val;
-  });
-  document.querySelectorAll('.no-comment').forEach(el => {
-    el.classList.remove('visible', 'missing'); el.value = '';
-  });
-  // Rensa ensamarbete-tilläggsfråga
+  document.querySelectorAll('.checklist-row').forEach(r => { r.querySelectorAll(':scope > div > .tri-toggle .tri-btn').forEach(b => b.classList.remove('active')); delete r.dataset.val; });
+  document.querySelectorAll('.no-comment').forEach(el => { el.classList.remove('visible', 'missing'); el.value = ''; });
   const sub = document.getElementById('sub-ensamarbete');
-  if (sub) {
-    sub.style.display = 'none';
-    sub.style.border = '';
-    sub.querySelectorAll('.tri-btn').forEach(b => b.classList.remove('active'));
-    delete sub.dataset.kommunikation;
-  }
+  if (sub) { sub.style.display = 'none'; sub.style.border = ''; sub.querySelectorAll('.tri-btn').forEach(b => b.classList.remove('active')); delete sub.dataset.kommunikation; }
   setTodayDefaults();
 }
 
@@ -848,40 +683,25 @@ async function loadMyRecords() {
   el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Laddar...</div></div>';
   try {
     myRecords = await sbGet('rapporter', `anvandare_id=eq.${currentUser.id}`);
-    renderLista();
-    updateBadge();
-  } catch(e) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><div class="empty-text">Kunde inte ladda rapporter.</div></div>';
-  }
+    renderLista(); updateBadge();
+  } catch(e) { el.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><div class="empty-text">Kunde inte ladda rapporter.</div></div>'; }
 }
-
 async function loadAllRecords() {
-  try {
-    allRecords = await sbGet('rapporter', '');
-    renderAdmin();
-  } catch(e) { console.error(e); }
+  try { allRecords = await sbGet('rapporter', ''); renderAdmin(); } catch(e) { console.error(e); }
 }
 
 // ── RENDER ────────────────────────────────────────────────────
 function renderLista() {
   const el = document.getElementById('lista-content');
-  if (!myRecords.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Du har inga rapporter ännu.</div></div>';
-    return;
-  }
+  if (!myRecords.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Du har inga rapporter ännu.</div></div>'; return; }
   el.innerHTML = myRecords.map(r => cardHTML(r, false)).join('');
 }
-
 function renderAdmin() {
   const el = document.getElementById('admin-content');
   let filtered = adminFilter === 'alla' ? allRecords : allRecords.filter(r => r.typ === adminFilter);
-  if (!filtered.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Inga rapporter.</div></div>';
-    return;
-  }
+  if (!filtered.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Inga rapporter.</div></div>'; return; }
   el.innerHTML = filtered.map(r => cardHTML(r, true)).join('');
 }
-
 function cardHTML(r, showReporter) {
   return `<div class="card" onclick="showDetail('${r.id}', ${showReporter})">
     <div class="card-top">
@@ -893,17 +713,12 @@ function cardHTML(r, showReporter) {
     ${showReporter ? `<div class="card-reporter">👤 ${r.anvandare_namn || 'Okänd'}</div>` : ''}
   </div>`;
 }
-
 function filterAdmin(type, btn) {
   adminFilter = type;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderAdmin();
+  btn.classList.add('active'); renderAdmin();
 }
-
-function updateBadge() {
-  document.getElementById('count-badge').textContent = myRecords.length;
-}
+function updateBadge() { document.getElementById('count-badge').textContent = myRecords.length; }
 
 // ── DETAIL ────────────────────────────────────────────────────
 function showDetail(id, isAdmin) {
@@ -912,15 +727,10 @@ function showDetail(id, isAdmin) {
   const records = isAdmin ? allRecords : myRecords;
   const r = records.find(rec => rec.id === id);
   if (!r) return;
-
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('detail-view').classList.add('active');
-
-  const deleteBtn = document.getElementById('delete-btn');
-  deleteBtn.style.display = currentUser.roll === 'admin' || r.anvandare_id === currentUser.id ? 'block' : 'none';
-
+  document.getElementById('delete-btn').style.display = currentUser.roll === 'admin' ? 'block' : 'none';
   const svarEmoji = v => v === 'yes' ? '✅' : v === 'no' ? '❌' : v === 'na' ? '➖' : '⬜';
-
   let html = '';
   if (r.typ === 'risk') {
     html = `
@@ -929,15 +739,12 @@ function showDetail(id, isAdmin) {
       <div class="detail-meta">${r.datum || ''} ${r.tid || ''} · ${r.anvandare_namn || 'Anonym'}</div>
       <div class="detail-section"><div class="detail-section-title">Beskrivning</div><div class="detail-text">${r.beskrivning || '—'}</div></div>
       ${r.orsaker?.length ? `<div class="detail-section"><div class="detail-section-title">Orsaker</div><div class="detail-text">${r.orsaker.join(', ')}</div></div>` : ''}
-      ${r.atgarder ? `<div class="detail-section"><div class="detail-section-title">Förslag åtgärder</div><div class="detail-text">${r.atgarder}</div></div>` : ''}
-    `;
+      ${r.atgarder ? `<div class="detail-section"><div class="detail-section-title">Förslag åtgärder</div><div class="detail-text">${r.atgarder}</div></div>` : ''}`;
   } else {
     const renderChecks = (arr, reversed) => (arr||[]).map(item => {
       const triggerVal = reversed ? 'yes' : 'no';
       return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
-        <div style="display:flex;gap:10px;font-size:13px">
-          <span style="flex-shrink:0">${svarEmoji(item.svar)}</span><span>${item.fraga}</span>
-        </div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="flex-shrink:0">${svarEmoji(item.svar)}</span><span>${item.fraga}</span></div>
         ${item.svar === triggerVal && item.kommentar ? `<div style="margin-top:6px;margin-left:22px;font-size:12px;color:var(--accent2);background:rgba(232,93,74,0.08);border-radius:6px;padding:6px 10px;">💬 ${item.kommentar}</div>` : ''}
       </div>`;
     }).join('');
@@ -948,34 +755,26 @@ function showDetail(id, isAdmin) {
       <div class="detail-section"><div class="detail-section-title">Har du tänkt på</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.tankt, false)}</div></div>
       <div class="detail-section"><div class="detail-section-title">Finns risk för</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.risker, true)}</div></div>
       <div class="detail-section"><div class="detail-section-title">Hittar du</div><div class="detail-text" style="padding:0 14px">${renderChecks(r.varfinns, false)}</div></div>
-      ${r.kommentar ? `<div class="detail-section"><div class="detail-section-title">Kommentarer</div><div class="detail-text">${r.kommentar}</div></div>` : ''}
-    `;
+      ${r.kommentar ? `<div class="detail-section"><div class="detail-section-title">Kommentarer</div><div class="detail-text">${r.kommentar}</div></div>` : ''}`;
   }
   document.getElementById('detail-content').innerHTML = html;
 }
-
 function hideDetail() {
   document.getElementById('detail-view').classList.remove('active');
   const backPage = currentDetailSource === 'admin' ? 'admin' : 'lista';
   document.getElementById('page-'+backPage).classList.add('active');
   document.querySelectorAll('.tab').forEach(t => {
-    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${backPage}'`)) t.classList.add('active');
-    else t.classList.remove('active');
+    t.classList.toggle('active', !!t.getAttribute('onclick')?.includes(`'${backPage}'`));
   });
 }
-
 async function deleteCurrentRecord() {
   if (!confirm('Radera denna rapport?')) return;
   try {
     await sbDelete('rapporter', currentDetailId);
     myRecords = myRecords.filter(r => r.id !== currentDetailId);
     allRecords = allRecords.filter(r => r.id !== currentDetailId);
-    showToast('🗑 Rapport raderad');
-    updateBadge();
-    hideDetail();
-  } catch(e) {
-    showToast('Kunde inte radera.', 'error');
-  }
+    showToast('🗑 Rapport raderad'); updateBadge(); hideDetail();
+  } catch(e) { showToast('Kunde inte radera.', 'error'); }
 }
 
 // ── STATS ─────────────────────────────────────────────────────
@@ -984,29 +783,18 @@ function renderStats() {
   const total = allRecords.length;
   const risks = allRecords.filter(r => r.typ === 'risk').length;
   const invs = allRecords.filter(r => r.typ === 'inv').length;
-
   const orsakCount = {};
-  allRecords.filter(r => r.typ === 'risk').forEach(r => {
-    (r.orsaker || []).forEach(o => orsakCount[o] = (orsakCount[o]||0)+1);
-  });
+  allRecords.filter(r => r.typ === 'risk').forEach(r => { (r.orsaker||[]).forEach(o => orsakCount[o] = (orsakCount[o]||0)+1); });
   const maxOrsak = Math.max(...Object.values(orsakCount), 1);
-
-  // Per person
   const personCount = {};
-  allRecords.forEach(r => {
-    const n = r.anvandare_namn || 'Okänd';
-    personCount[n] = (personCount[n]||0)+1;
-  });
+  allRecords.forEach(r => { const n = r.anvandare_namn || 'Okänd'; personCount[n] = (personCount[n]||0)+1; });
   const maxPerson = Math.max(...Object.values(personCount), 1);
-
-  const orsakHTML = Object.entries(orsakCount).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
-    <div class="bar-row"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(v/maxOrsak*100).toFixed(0)}%"></div></div><span class="bar-count">${v}</span></div>
-  `).join('') || '<p style="font-size:13px;color:var(--muted)">Ingen data ännu</p>';
-
-  const personHTML = Object.entries(personCount).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
-    <div class="bar-row"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(v/maxPerson*100).toFixed(0)}%;background:var(--green)"></div></div><span class="bar-count">${v}</span></div>
-  `).join('') || '<p style="font-size:13px;color:var(--muted)">Ingen data</p>';
-
+  const orsakHTML = Object.entries(orsakCount).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
+    `<div class="bar-row"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(v/maxOrsak*100).toFixed(0)}%"></div></div><span class="bar-count">${v}</span></div>`
+  ).join('') || '<p style="font-size:13px;color:var(--muted)">Ingen data ännu</p>';
+  const personHTML = Object.entries(personCount).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
+    `<div class="bar-row"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(v/maxPerson*100).toFixed(0)}%;background:var(--green)"></div></div><span class="bar-count">${v}</span></div>`
+  ).join('') || '<p style="font-size:13px;color:var(--muted)">Ingen data</p>';
   el.innerHTML = `
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-number">${total}</div><div class="stat-label">Totalt</div></div>
@@ -1017,48 +805,33 @@ function renderStats() {
     <div class="section-header">Orsaker (Risk/Tillbud)</div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">${orsakHTML}</div>
     <div class="section-header">Rapporter per person</div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">${personHTML}</div>
-  `;
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">${personHTML}</div>`;
 }
 
 // ── EXPORT ────────────────────────────────────────────────────
 async function exportCSV() {
   await loadAllRecords();
   if (!allRecords.length) { showToast('Inga data att exportera', 'error'); return; }
-
-  // Hjälpfunktion: extrahera Nej-kommentarer från en sektion
-  const nejKommentarer = (arr) => (arr||[])
-    .filter(i => i.svar === 'no' && i.kommentar)
-    .map(i => `${i.fraga}: ${i.kommentar}`)
-    .join(' | ');
-
+  const nejKommentarer = arr => (arr||[]).filter(i => i.svar === 'no' && i.kommentar).map(i => `${i.fraga}: ${i.kommentar}`).join(' | ');
   const rows = [['ID','Typ','Datum','Tid','Plats','Person','Beskrivning','Orsaker','Åtgärder','Nej-kommentarer (Har du tänkt på)','Nej-kommentarer (Risk för)','Nej-kommentarer (Var finns)','Övriga kommentarer','Sparad']];
   allRecords.forEach(r => rows.push([
     r.id, r.typ, r.datum||'', r.tid||'', r.plats||'', r.anvandare_namn||'',
-    (r.beskrivning||'').replace(/\n/g,' '),
-    (r.orsaker||[]).join('; '),
-    (r.atgarder||'').replace(/\n/g,' '),
-    nejKommentarer(r.tankt),
-    nejKommentarer(r.risker),
-    nejKommentarer(r.varfinns),
-    (r.kommentar||'').replace(/\n/g,' '),
-    r.sparad||''
+    (r.beskrivning||'').replace(/\n/g,' '), (r.orsaker||[]).join('; '), (r.atgarder||'').replace(/\n/g,' '),
+    nejKommentarer(r.tankt), nejKommentarer(r.risker), nejKommentarer(r.varfinns),
+    (r.kommentar||'').replace(/\n/g,' '), r.sparad||''
   ]));
   const csv = '\uFEFF' + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
   download('riskcheck_export.csv', csv, 'text/csv;charset=utf-8;');
   showToast('✓ CSV exporterad');
 }
-
 async function exportJSON() {
   await loadAllRecords();
   if (!allRecords.length) { showToast('Inga data att exportera', 'error'); return; }
   download('riskcheck_export.json', JSON.stringify(allRecords, null, 2), 'application/json');
   showToast('✓ JSON exporterad');
 }
-
 function download(name, data, type) {
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], {type}));
-  a.download = name; a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], {type})); a.download = name; a.click();
 }
 
 // ── UTILS ─────────────────────────────────────────────────────
