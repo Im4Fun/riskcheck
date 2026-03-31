@@ -128,6 +128,8 @@
   }
   .tri-btn.yes.active { background: var(--green); border-color: var(--green); }
   .tri-btn.no.active { background: var(--accent2); border-color: var(--accent2); }
+  .tri-btn.no.active.safe { background: var(--green); border-color: var(--green); }
+  .tri-btn.yes.active.danger { background: var(--accent2); border-color: var(--accent2); }
   .tri-btn.na.active { background: var(--muted); border-color: var(--muted); }
   .checklist-text { font-size: 13px; flex: 1; line-height: 1.4; }
 
@@ -517,8 +519,8 @@ function buildSection(id, items) {
     <div class="checklist-row" id="row-${id}-${i}" style="flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:12px;width:100%">
         <div class="tri-toggle">
-          <button class="tri-btn yes" onclick="setTri('${id}',${i},'yes')">✓</button>
-          <button class="tri-btn no" onclick="setTri('${id}',${i},'no')">✗</button>
+          <button class="tri-btn yes ${(id === 'risk-section' || (id === 'tankt-section' && (i === 6 || i === 9))) ? 'danger' : ''}" onclick="setTri('${id}',${i},'yes')">✓</button>
+          <button class="tri-btn no ${(id === 'risk-section' || (id === 'tankt-section' && (i === 6 || i === 9))) ? 'safe' : ''}" onclick="setTri('${id}',${i},'no')">✗</button>
           <button class="tri-btn na" onclick="setTri('${id}',${i},'na')">—</button>
         </div>
         <span class="checklist-text">${item}</span>
@@ -555,7 +557,12 @@ function setTri(sectionId, idx, val) {
   }
   const comment = document.getElementById(`comment-${sectionId}-${idx}`);
   if (!comment) return;
-  const triggerVal = (sectionId === 'risk-section' || (sectionId === 'tankt-section' && idx === 6)) ? 'yes' : 'no';
+  const isReversed = (sectionId === 'risk-section' || (sectionId === 'tankt-section' && (idx === 6 || idx === 9)));
+  const noBtn = row.querySelector(':scope > div > .tri-toggle .tri-btn.no');
+  if (noBtn) noBtn.classList.toggle('safe', isReversed);
+  const yesBtn = row.querySelector(':scope > div > .tri-toggle .tri-btn.yes');
+  if (yesBtn) yesBtn.classList.toggle('danger', isReversed);
+  const triggerVal = isReversed ? 'yes' : 'no';
   if (val === triggerVal) { comment.classList.add('visible'); comment.classList.remove('missing'); }
   else { comment.classList.remove('visible', 'missing'); comment.value = ''; }
 }
