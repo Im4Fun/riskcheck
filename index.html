@@ -249,6 +249,27 @@
   }
   .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
   .footer { text-align: center; padding: 24px 16px 32px; font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+
+  .user-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px;
+  }
+  .user-info { flex: 1; }
+  .user-name { font-size: 15px; font-weight: 600; }
+  .user-role {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 4px; margin-left: 8px;
+  }
+  .user-role.admin { background: rgba(245,166,35,0.15); color: var(--accent); border: 1px solid rgba(245,166,35,0.3); }
+  .user-role.personal { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .user-delete-btn {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--accent2); font-size: 16px; width: 34px; height: 34px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; flex-shrink: 0;
+  }
+  .user-delete-btn:active { background: rgba(232,93,74,0.1); border-color: var(--accent2); }
 </style>
 </head>
 <body>
@@ -291,6 +312,7 @@
     <button class="tab" onclick="showTab('lista')">Rapporter <span class="badge" id="count-badge">0</span></button>
     <button class="tab admin-only" onclick="showTab('admin')" style="display:none">Admin</button>
     <button class="tab admin-only" onclick="showTab('statistik')" style="display:none">Statistik</button>
+    <button class="tab admin-only" onclick="showTab('anvandare')" style="display:none">Användare</button>
   </div>
 
   <div class="page active" id="page-ny">
@@ -369,6 +391,24 @@
     <p style="font-size:12px;color:var(--muted);margin-top:12px;text-align:center;">Exporterar all data från databasen.</p>
   </div>
 
+  <div class="page" id="page-anvandare">
+    <div class="section-header" style="margin-top:8px">Lägg till användare</div>
+    <div class="field"><label>Namn</label><input type="text" id="ny-namn" placeholder="För- och efternamn"></div>
+    <div class="row-2">
+      <div class="field"><label>PIN-kod</label><input type="text" id="ny-pin" placeholder="T.ex. 1234" inputmode="numeric" maxlength="10"></div>
+      <div class="field"><label>Roll</label>
+        <select id="ny-roll" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;">
+          <option value="personal">Personal</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary" id="add-user-btn" onclick="addUser()">Lägg till användare</button>
+
+    <div class="section-header">Befintliga användare</div>
+    <div id="anvandare-list"></div>
+  </div>
+
   <div class="detail" id="detail-view">
     <button class="back-btn" onclick="hideDetail()">← Tillbaka</button>
     <div id="detail-content"></div>
@@ -442,6 +482,14 @@ async function sbDelete(table, id) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: 'DELETE',
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+  });
+  if (!res.ok) throw new Error(await res.text());
+}
+async function sbPatch(table, id, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error(await res.text());
 }
@@ -577,6 +625,7 @@ function showTab(tab) {
   if (tab === 'lista') loadMyRecords();
   if (tab === 'admin') loadAllRecords();
   if (tab === 'statistik') loadAllRecords().then(renderStats);
+  if (tab === 'anvandare') loadAnvandare();
 }
 function selectForm(type) {
   activeForm = type;
@@ -815,7 +864,70 @@ function renderStats() {
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">${personHTML}</div>`;
 }
 
-// ── EXPORT ────────────────────────────────────────────────────
+// ── ANVÄNDARE ─────────────────────────────────────────────────
+async function loadAnvandare() {
+  const el = document.getElementById('anvandare-list');
+  el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Laddar...</div></div>';
+  try {
+    const users = await sbGet('anvandare', 'order=namn.asc');
+    if (!users.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Inga användare.</div></div>'; return; }
+    el.innerHTML = users.map(u => `
+      <div class="user-row">
+        <div class="user-info">
+          <span class="user-name">${u.namn}</span>
+          <span class="user-role ${u.roll}">${u.roll === 'admin' ? 'Admin' : 'Personal'}</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          ${u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--muted);font-size:12px;width:auto;padding:0 10px;" onclick="toggleRole('${u.id}', '${u.roll}', '${u.namn}')" title="Byt roll">⇄</button>` : ''}
+          ${u.id !== currentUser.id ? `<button class="user-delete-btn" onclick="deleteUser('${u.id}', '${u.namn}')" title="Ta bort">🗑</button>` : ''}
+          ${u.id === currentUser.id ? `<span style="font-size:11px;color:var(--muted);padding:0 4px;">Du</span>` : ''}
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><div class="empty-text">Kunde inte ladda användare.</div></div>'; }
+}
+
+async function addUser() {
+  const namn = document.getElementById('ny-namn').value.trim();
+  const pin = document.getElementById('ny-pin').value.trim();
+  const roll = document.getElementById('ny-roll').value;
+  if (!namn || !pin) { showToast('⚠️ Fyll i namn och PIN', 'error'); return; }
+  if (pin.length < 4) { showToast('⚠️ PIN måste vara minst 4 siffror', 'error'); return; }
+  const btn = document.getElementById('add-user-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sparar...';
+  try {
+    await sbInsert('anvandare', { namn, pin, roll });
+    document.getElementById('ny-namn').value = '';
+    document.getElementById('ny-pin').value = '';
+    document.getElementById('ny-roll').value = 'personal';
+    showToast('✓ Användare tillagd');
+    loadAnvandare();
+  } catch(e) { showToast('Kunde inte lägga till användare.', 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Lägg till användare'; }
+}
+
+async function toggleRole(id, currentRoll, namn) {
+  const nyRoll = currentRoll === 'admin' ? 'personal' : 'admin';
+  const rollText = nyRoll === 'admin' ? 'Admin' : 'Personal';
+  if (!confirm(`Byt roll för ${namn} till ${rollText}?`)) return;
+  try {
+    await sbPatch('anvandare', id, { roll: nyRoll });
+    showToast(`✓ ${namn} är nu ${rollText}`);
+    loadAnvandare();
+  } catch(e) { showToast('Kunde inte byta roll.', 'error'); }
+}
+
+
+async function deleteUser(id, namn) {
+  if (!confirm(`Ta bort ${namn}?`)) return;
+  if (id === currentUser.id) { showToast('⚠️ Du kan inte ta bort dig själv', 'error'); return; }
+  try {
+    await sbDelete('anvandare', id);
+    showToast('🗑 Användare borttagen');
+    loadAnvandare();
+  } catch(e) { showToast('Kunde inte ta bort användare.', 'error'); }
+}
+
+
 async function exportCSV() {
   await loadAllRecords();
   if (!allRecords.length) { showToast('Inga data att exportera', 'error'); return; }
