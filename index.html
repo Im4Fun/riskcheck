@@ -964,6 +964,12 @@ function showToast(msg, type) {
 }
 
 loadTheme();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/riskcheck/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
