@@ -107,7 +107,9 @@ const SUPABASE_KEY = 'your-publishable-api-key';
 
 ### 4. Deploy
 
-Upload `index.html` to GitHub Pages (or any static host) and share the URL with your team.
+Upload both `index.html` and `sw.js` to GitHub Pages (or any static host) — both files must be in the same directory. Share the URL with your team.
+
+The app includes a Service Worker that caches resources automatically. When you upload a new version of `index.html`, users will receive the update the next time they close and reopen the app — no reinstallation needed.
 
 ---
 
