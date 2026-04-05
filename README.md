@@ -72,14 +72,18 @@ create table rapporter (
 alter table anvandare enable row level security;
 alter table rapporter enable row level security;
 
+grant usage on schema public to anon;
+grant select, insert, update, delete on anvandare to anon;
+grant select, insert, delete on rapporter to anon;
+
 create policy "Läs användare" on anvandare for select using (true);
+create policy "Skapa användare" on anvandare for insert with check (true);
+create policy "Uppdatera användare" on anvandare for update to anon using (true);
+create policy "Ta bort användare" on anvandare for delete to anon using (true);
+
 create policy "Skapa rapport" on rapporter for insert to anon with check (true);
 create policy "Se rapporter" on rapporter for select to anon using (true);
 create policy "Radera rapport" on rapporter for delete to anon using (true);
-
-grant usage on schema public to anon;
-grant select on anvandare to anon;
-grant select, insert, delete on rapporter to anon;
 ```
 
 ### 2. Add users
