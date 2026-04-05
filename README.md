@@ -10,9 +10,11 @@ A mobile-first web app for digital risk and incident reporting, built as a singl
   - *Risk/Incident Report* — log hazards, near-misses, root causes, and proposed actions
   - *Risk Inventory* — pre-task safety checklist with structured yes/no/N/A responses
 - **Smart validation** — mandatory comment fields appear automatically when a critical answer is given (e.g. "Yes, this risk exists" or "No, I can't find the fire equipment")
+- **Color-coded responses** — green indicates a safe answer, red indicates a risk or concern, making post-task reviews quick and intuitive
 - **Follow-up questions** — context-sensitive sub-questions, such as lone worker communication checks
 - **Login with name + PIN** — no email or account required
-- **Admin view** — see all reports across all users, filter by type, view details
+- **Admin view** — see all reports across all users, filter by type, view details, delete reports
+- **User management** — admins can add new users, remove existing ones, and toggle roles between Personal and Admin directly in the app
 - **Statistics** — charts showing report counts, root cause frequency, and reports per person
 - **Export** — download all data as CSV (semicolon-separated, UTF-8 BOM for Excel compatibility) or JSON
 - **Three themes** — Dark, Classic, and Light, saved per device
@@ -118,6 +120,7 @@ Log in with an admin account to access:
 - All reports from all users
 - Statistics and charts
 - CSV/JSON export
+- User management — add, remove, and change roles
 
 ---
 
