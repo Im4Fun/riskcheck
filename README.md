@@ -13,7 +13,7 @@ A mobile-first web app for digital risk and incident reporting, built as a singl
 - **Color-coded responses** — green indicates a safe answer, red indicates a risk or concern, making post-task reviews quick and intuitive
 - **Follow-up questions** — context-sensitive sub-questions, such as lone worker communication checks
 - **Login with name + PIN** — no email or account required
-- **Admin view** — see all reports across all users, filter by type, view details, delete reports
+- **Admin view** — see all reports across all users, filter by type and by year/month with a period summary showing report counts, delete reports
 - **User management** — admins can add new users, remove existing ones, and toggle roles between Personal and Admin directly in the app
 - **Statistics** — charts showing report counts, root cause frequency, and reports per person
 - **Export** — download all data as CSV (semicolon-separated, UTF-8 BOM for Excel compatibility) or JSON
