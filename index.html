@@ -472,7 +472,6 @@ let allRecords = [];
 let myRecords = [];
 let currentDetailId = null;
 let currentDetailSource = 'mine';
-let activeForm = 'inv';
 let adminFilter = 'alla';
 
 // ── TEMA ──────────────────────────────────────────────────────
@@ -656,7 +655,6 @@ function showTab(tab) {
   if (tab === 'anvandare') loadAnvandare();
 }
 function selectForm(type) {
-  activeForm = type;
   document.getElementById('btn-risk').classList.toggle('active', type==='risk');
   document.getElementById('btn-inv').classList.toggle('active', type==='inv');
   document.getElementById('form-risk').style.display = type==='risk' ? 'block' : 'none';
