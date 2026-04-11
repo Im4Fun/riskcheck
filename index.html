@@ -454,7 +454,7 @@ const TANKT_ITEMS = [
   "Rätt och tillräcklig skyddsutrustning?","Ändamålsenliga verktyg?","Rätt plats/utrustning?",
   "Följt/förstått aktuella instruktioner och/eller arbetsorder?",
   "Utrustning dränerad/trycklös/spänningsfri – bryt och lås?","Behövs avspärrning?",
-  "Rätt arbetsställning samt lyfthjälpmedel?","Tillräcklig belysning?","Ensamarbete?"
+  "Rätt arbetsställning?","Daglig tillsyn vid användning av travers och/eller lyfthjälpmedel?","Tillräcklig belysning?","Ensamarbete?"
 ];
 const RISK_ITEMS = [
   "Påverkan av arbete/utrustning i närheten?","Heta arbeten?",
@@ -580,7 +580,7 @@ function buildInvChecklist() {
 }
 function buildSection(id, items) {
   document.getElementById(id).innerHTML = items.map((item, i) => {
-    const isEnsamarbete = id === 'tankt-section' && i === 8;
+    const isEnsamarbete = id === 'tankt-section' && i === 9;
     const extraHTML = isEnsamarbete ? `
       <div class="sub-question" id="sub-ensamarbete" style="display:none;width:100%;margin-top:8px;padding:10px 12px;background:rgba(245,166,35,0.06);border:1px solid var(--border);border-radius:8px;">
         <div style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:8px;">Finns kommunikation?</div>
@@ -589,13 +589,13 @@ function buildSection(id, items) {
           <button class="tri-btn no" onclick="setEnsamarbete('no')">✗</button>
         </div>
       </div>
-      <textarea class="no-comment" id="comment-tankt-section-8" placeholder="Beskriv hur detta säkras upp (obligatoriskt)…"></textarea>` : '';
+      <textarea class="no-comment" id="comment-tankt-section-9" placeholder="Beskriv hur detta säkras upp (obligatoriskt)…"></textarea>` : '';
     return `
     <div class="checklist-row" id="row-${id}-${i}" style="flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:12px;width:100%">
         <div class="tri-toggle">
-          <button class="tri-btn yes ${(id === 'risk-section' || (id === 'tankt-section' && (i === 5 || i === 8))) ? 'danger' : ''}" onclick="setTri('${id}',${i},'yes')">✓</button>
-          <button class="tri-btn no ${(id === 'risk-section' || (id === 'tankt-section' && (i === 5 || i === 8))) ? 'safe' : ''}" onclick="setTri('${id}',${i},'no')">✗</button>
+          <button class="tri-btn yes ${(id === 'risk-section' || (id === 'tankt-section' && (i === 5 || i === 9))) ? 'danger' : ''}" onclick="setTri('${id}',${i},'yes')">✓</button>
+          <button class="tri-btn no ${(id === 'risk-section' || (id === 'tankt-section' && (i === 5 || i === 9))) ? 'safe' : ''}" onclick="setTri('${id}',${i},'no')">✗</button>
           <button class="tri-btn na" onclick="setTri('${id}',${i},'na')">—</button>
         </div>
         <span class="checklist-text">${item}</span>
@@ -609,7 +609,7 @@ function setEnsamarbete(val) {
   sub.querySelectorAll('.tri-btn').forEach(b => b.classList.remove('active'));
   sub.querySelector(`.tri-btn.${val}`).classList.add('active');
   sub.dataset.kommunikation = val;
-  const comment = document.getElementById('comment-tankt-section-8');
+  const comment = document.getElementById('comment-tankt-section-9');
   if (val === 'no') { comment.classList.add('visible'); comment.classList.remove('missing'); }
   else { comment.classList.remove('visible', 'missing'); comment.value = ''; }
 }
@@ -618,21 +618,21 @@ function setTri(sectionId, idx, val) {
   row.querySelectorAll(':scope > div > .tri-toggle .tri-btn').forEach(b => b.classList.remove('active'));
   row.querySelector(`:scope > div > .tri-toggle .tri-btn.${val}`).classList.add('active');
   row.dataset.val = val;
-  if (sectionId === 'tankt-section' && idx === 8) {
+  if (sectionId === 'tankt-section' && idx === 9) {
     const sub = document.getElementById('sub-ensamarbete');
     if (val === 'yes') { sub.style.display = 'block'; }
     else {
       sub.style.display = 'none';
       sub.querySelectorAll('.tri-btn').forEach(b => b.classList.remove('active'));
       delete sub.dataset.kommunikation;
-      const c = document.getElementById('comment-tankt-section-8');
+      const c = document.getElementById('comment-tankt-section-9');
       c.classList.remove('visible','missing'); c.value = '';
     }
     return;
   }
   const comment = document.getElementById(`comment-${sectionId}-${idx}`);
   if (!comment) return;
-  const isReversed = (sectionId === 'risk-section' || (sectionId === 'tankt-section' && (idx === 5 || idx === 8)));
+  const isReversed = (sectionId === 'risk-section' || (sectionId === 'tankt-section' && (idx === 5 || idx === 9)));
   const noBtn = row.querySelector(':scope > div > .tri-toggle .tri-btn.no');
   if (noBtn) noBtn.classList.toggle('safe', isReversed);
   const yesBtn = row.querySelector(':scope > div > .tri-toggle .tri-btn.yes');
@@ -694,9 +694,9 @@ async function saveInv() {
   const getSection = (id, items) => {
     const rows = document.querySelectorAll(`#${id} .checklist-row`);
     return items.map((item, i) => {
-      if (id === 'tankt-section' && i === 8) {
+      if (id === 'tankt-section' && i === 9) {
         const sub = document.getElementById('sub-ensamarbete');
-        return { fraga: item, svar: rows[i]?.dataset.val || null, kommunikation: sub?.dataset.kommunikation || null, kommentar: document.getElementById('comment-tankt-section-8')?.value.trim() || '' };
+        return { fraga: item, svar: rows[i]?.dataset.val || null, kommunikation: sub?.dataset.kommunikation || null, kommentar: document.getElementById('comment-tankt-section-9')?.value.trim() || '' };
       }
       return { fraga: item, svar: rows[i]?.dataset.val || null, kommentar: document.getElementById(`comment-${id}-${i}`)?.value.trim() || '' };
     });
@@ -711,12 +711,12 @@ async function saveInv() {
     items.forEach((_, i) => {
       const row = document.getElementById(`row-${id}-${i}`);
       const val = row?.dataset.val;
-      if (id === 'tankt-section' && i === 8) {
+      if (id === 'tankt-section' && i === 9) {
         if (val === 'yes') {
           const sub = document.getElementById('sub-ensamarbete');
           if (!sub.dataset.kommunikation) { sub.style.border = '1px solid var(--accent2)'; missingComments = true; }
           else if (sub.dataset.kommunikation === 'no') {
-            const c = document.getElementById('comment-tankt-section-8');
+            const c = document.getElementById('comment-tankt-section-9');
             if (!c.value.trim()) { c.classList.add('missing'); missingComments = true; }
           }
         }
