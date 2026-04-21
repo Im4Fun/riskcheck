@@ -522,6 +522,9 @@ async function sbPatch(table, id, data) {
 }
 
 // ── LOGIN ─────────────────────────────────────────────────────
+const MAX_ATTEMPTS = 3;
+const LOCKOUT_MINUTES = 30;
+
 async function doLogin() {
   const namn = document.getElementById('login-namn').value.trim();
   const pin = document.getElementById('login-pin').value.trim();
@@ -530,13 +533,57 @@ async function doLogin() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
   document.getElementById('login-error').style.display = 'none';
   try {
-    const users = await sbGet('anvandare', `namn=ilike.${encodeURIComponent(namn)}&pin=eq.${encodeURIComponent(pin)}`);
+    // Hämta användaren
+    const users = await sbGet('anvandare', `namn=ilike.${encodeURIComponent(namn)}`);
     if (!users.length) { showLoginError('Fel namn eller PIN-kod.'); return; }
-    currentUser = users[0];
+    const user = users[0];
+
+    // Kontrollera om kontot är låst
+    const lockoutCheck = await checkLockout(user.id);
+    if (lockoutCheck.locked) {
+      const minKvar = Math.ceil((lockoutCheck.unlockAt - Date.now()) / 60000);
+      showLoginError(`Kontot är låst. Försök igen om ${minKvar} minut${minKvar !== 1 ? 'er' : ''}.`);
+      return;
+    }
+
+    // Kontrollera PIN
+    if (user.pin !== pin) {
+      await sbInsert('inloggningar', { anvandare_id: user.id, namn: user.namn, typ: 'misslyckat' });
+      const attemptsLeft = await getRemainingAttempts(user.id);
+      if (attemptsLeft <= 0) {
+        await sbInsert('inloggningar', { anvandare_id: user.id, namn: user.namn, typ: 'last' });
+        showLoginError(`Kontot är nu låst i ${LOCKOUT_MINUTES} minuter.`);
+      } else {
+        showLoginError(`Fel namn eller PIN-kod. ${attemptsLeft} försök kvar.`);
+      }
+      return;
+    }
+
+    currentUser = user;
     startApp();
   } catch(e) {
     showLoginError('Kunde inte ansluta till databasen. Kontrollera internetanslutningen.');
   } finally { btn.disabled = false; btn.textContent = 'Logga in'; }
+}
+
+async function checkLockout(anvandareId) {
+  const since = new Date(Date.now() - LOCKOUT_MINUTES * 60000).toISOString();
+  const logs = await sbGet('inloggningar', `anvandare_id=eq.${anvandareId}&typ=eq.last&sparad=gte.${since}`);
+  if (!logs.length) return { locked: false };
+  const lockTime = new Date(logs[0].sparad).getTime();
+  const unlockAt = lockTime + LOCKOUT_MINUTES * 60000;
+  if (Date.now() < unlockAt) {
+    return { locked: true, unlockAt };
+  }
+  // Automatisk upplåsning — logga det
+  await sbInsert('inloggningar', { anvandare_id: anvandareId, namn: logs[0].namn, typ: 'upplast_auto' });
+  return { locked: false };
+}
+
+async function getRemainingAttempts(anvandareId) {
+  const since = new Date(Date.now() - LOCKOUT_MINUTES * 60000).toISOString();
+  const logs = await sbGet('inloggningar', `anvandare_id=eq.${anvandareId}&typ=eq.misslyckat&sparad=gte.${since}`);
+  return Math.max(0, MAX_ATTEMPTS - logs.length);
 }
 function showLoginError(msg) {
   const el = document.getElementById('login-error');
@@ -931,18 +978,46 @@ async function loadAnvandare() {
   try {
     const users = await sbGet('anvandare', 'order=namn.asc');
     if (!users.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Inga användare.</div></div>'; return; }
-    el.innerHTML = users.map(u => `
+
+    // Hämta låsningsloggar senaste 30 dagarna
+    const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const lockLogs = await sbGet('inloggningar', `typ=in.(last,upplast_auto,upplast_admin)&sparad=gte.${since30}`);
+
+    // Kontrollera vilka som är aktivt låsta (senaste 30 min)
+    const since30min = new Date(Date.now() - LOCKOUT_MINUTES * 60000).toISOString();
+    const activeLocks = await sbGet('inloggningar', `typ=eq.last&sparad=gte.${since30min}`);
+    const autoUnlocks = await sbGet('inloggningar', `typ=in.(upplast_auto,upplast_admin)&sparad=gte.${since30min}`);
+    const lockedIds = new Set(activeLocks.map(l => l.anvandare_id).filter(id =>
+      !autoUnlocks.some(u => u.anvandare_id === id && new Date(u.sparad) > new Date(activeLocks.find(l => l.anvandare_id === id)?.sparad))
+    ));
+
+    // Räkna automatiska upplåsningar per användare senaste 30 dagarna
+    const autoUnlockCount = {};
+    lockLogs.filter(l => l.typ === 'upplast_auto').forEach(l => {
+      autoUnlockCount[l.anvandare_id] = (autoUnlockCount[l.anvandare_id] || 0) + 1;
+    });
+
+    el.innerHTML = users.map(u => {
+      const isLocked = lockedIds.has(u.id);
+      const autoCount = autoUnlockCount[u.id] || 0;
+      return `
       <div class="user-row">
         <div class="user-info">
-          <span class="user-name">${u.namn}</span>
-          <span class="user-role ${u.roll}">${u.roll === 'admin' ? 'Admin' : 'Personal'}</span>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span class="user-name">${u.namn}</span>
+            <span class="user-role ${u.roll}">${u.roll === 'admin' ? 'Admin' : 'Personal'}</span>
+            ${isLocked ? `<span style="font-size:10px;font-weight:700;background:rgba(232,93,74,0.15);color:var(--accent2);border:1px solid rgba(232,93,74,0.3);padding:2px 7px;border-radius:4px;letter-spacing:0.5px;">🔒 LÅST</span>` : ''}
+          </div>
+          ${autoCount > 0 ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;">⏱ ${autoCount} automatisk upplåsning${autoCount !== 1 ? 'ar' : ''} senaste 30 dagarna</div>` : ''}
         </div>
         <div style="display:flex;gap:6px;">
+          ${isLocked && u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--green);font-size:12px;width:auto;padding:0 10px;" onclick="unlockUser('${u.id}', '${u.namn}')" title="Lås upp">🔓</button>` : ''}
           ${u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--muted);font-size:12px;width:auto;padding:0 10px;" onclick="toggleRole('${u.id}', '${u.roll}', '${u.namn}')" title="Byt roll">⇄</button>` : ''}
           ${u.id !== currentUser.id ? `<button class="user-delete-btn" onclick="deleteUser('${u.id}', '${u.namn}')" title="Ta bort">🗑</button>` : ''}
           ${u.id === currentUser.id ? `<span style="font-size:11px;color:var(--muted);padding:0 4px;">Du</span>` : ''}
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } catch(e) { el.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><div class="empty-text">Kunde inte ladda användare.</div></div>'; }
 }
 
@@ -965,7 +1040,16 @@ async function addUser() {
   finally { btn.disabled = false; btn.textContent = 'Lägg till användare'; }
 }
 
-async function toggleRole(id, currentRoll, namn) {
+async function unlockUser(id, namn) {
+  if (!confirm(`Lås upp ${namn}?`)) return;
+  try {
+    await sbInsert('inloggningar', { anvandare_id: id, namn, typ: 'upplast_admin' });
+    showToast(`🔓 ${namn} är upplåst`);
+    loadAnvandare();
+  } catch(e) { showToast('Kunde inte låsa upp användaren.', 'error'); }
+}
+
+
   const nyRoll = currentRoll === 'admin' ? 'personal' : 'admin';
   const rollText = nyRoll === 'admin' ? 'Admin' : 'Personal';
   if (!confirm(`Byt roll för ${namn} till ${rollText}?`)) return;
