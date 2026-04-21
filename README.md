@@ -12,7 +12,7 @@ A mobile-first web app for digital risk and incident reporting, built as a singl
 - **Smart validation** — mandatory comment fields appear automatically when a critical answer is given (e.g. "Yes, this risk exists" or "No, I can't find the fire equipment")
 - **Color-coded responses** — green indicates a safe answer, red indicates a risk or concern, making post-task reviews quick and intuitive
 - **Follow-up questions** — context-sensitive sub-questions, such as lone worker communication checks
-- **Login with name + PIN** — no email or account required
+- **Login with name + PIN** — no email or account required, with automatic lockout after 3 failed attempts (unlocks after 30 minutes or manually by admin)
 - **Admin view** — see all reports across all users, filter by type and by year/month with a period summary showing report counts, delete reports
 - **User management** — admins can add new users, remove existing ones, and toggle roles between Personal and Admin directly in the app
 - **Statistics** — charts showing report counts, root cause frequency, and reports per person
@@ -81,9 +81,20 @@ create policy "Skapa användare" on anvandare for insert with check (true);
 create policy "Uppdatera användare" on anvandare for update to anon using (true);
 create policy "Ta bort användare" on anvandare for delete to anon using (true);
 
-create policy "Skapa rapport" on rapporter for insert to anon with check (true);
-create policy "Se rapporter" on rapporter for select to anon using (true);
-create policy "Radera rapport" on rapporter for delete to anon using (true);
+create table inloggningar (
+  id uuid primary key default gen_random_uuid(),
+  anvandare_id uuid references anvandare(id) on delete cascade,
+  namn text not null,
+  typ text not null,
+  sparad timestamptz default now()
+);
+
+alter table inloggningar enable row level security;
+
+grant select, insert on inloggningar to anon;
+
+create policy "Läs inloggningar" on inloggningar for select using (true);
+create policy "Skapa inloggning" on inloggningar for insert with check (true);
 ```
 
 ### 2. Add users
@@ -135,7 +146,7 @@ Log in with an admin account to access:
 - The Supabase `anon` key is embedded in the HTML file. Since the repo is public, the key is visible in source code.
 - Row Level Security (RLS) is enabled on all tables, limiting what the key can access.
 - Staff must authenticate with a valid name + PIN before any data can be read or written.
-- For higher security requirements, consider rate limiting login attempts via a Supabase Edge Function.
+- Accounts are automatically locked for 30 minutes after 3 failed login attempts. Admins can unlock accounts manually in the Users tab.
 
 ---
 
