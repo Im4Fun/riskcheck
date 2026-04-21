@@ -1050,6 +1050,7 @@ async function unlockUser(id, namn) {
 }
 
 
+async function toggleRole(id, currentRoll, namn) {
   const nyRoll = currentRoll === 'admin' ? 'personal' : 'admin';
   const rollText = nyRoll === 'admin' ? 'Admin' : 'Personal';
   if (!confirm(`Byt roll för ${namn} till ${rollText}?`)) return;
