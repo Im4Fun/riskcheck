@@ -14,7 +14,8 @@ A mobile-first web app for digital risk and incident reporting, built as a singl
 - **Follow-up questions** — context-sensitive sub-questions, such as lone worker communication checks
 - **Login with name + PIN** — no email or account required, with automatic lockout after 3 failed attempts (unlocks after 30 minutes or manually by admin)
 - **Admin view** — see all reports across all users, filter by type and by year/month with a period summary showing report counts, delete reports
-- **User management** — admins can add new users, remove existing ones, and toggle roles between Personal and Admin directly in the app
+- **User management** — admins can add new users, remove existing ones, toggle roles, reset PIN codes and optionally force a PIN change at next login
+- **PIN self-service** — users can change their own PIN at any time from the nav bar
 - **Statistics** — charts showing report counts, root cause frequency, and reports per person
 - **Export** — download all data as CSV (semicolon-separated, UTF-8 BOM for Excel compatibility) or JSON
 - **Three themes** — Dark, Classic, and Light, saved per device
@@ -48,6 +49,7 @@ create table anvandare (
   namn text not null,
   pin text not null,
   roll text not null default 'personal',
+  tvinga_pin_byte boolean default false,
   sparad timestamptz default now()
 );
 
@@ -137,7 +139,7 @@ Log in with an admin account to access:
 - All reports from all users
 - Statistics and charts
 - CSV/JSON export
-- User management — add, remove, and change roles
+- User management — add, remove, change roles, reset PIN codes and force PIN change at next login
 
 ---
 
