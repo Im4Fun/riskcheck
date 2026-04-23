@@ -302,11 +302,14 @@
 <div id="app" style="display:none">
   <div class="nav">
     <div class="nav-title">Riskcheck</div>
-    <div class="nav-user">
-      <strong id="nav-namn"></strong>
-      <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button class="logout-btn" onclick="showPinChange()" id="pin-btn">Byt PIN</button>
-        <button class="logout-btn" onclick="doLogout()">Logga ut</button>
+    <div class="nav-user" style="position:relative;">
+      <button onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;text-align:right;padding:0;">
+        <strong id="nav-namn" style="display:block;color:var(--text);font-size:13px;"></strong>
+        <span style="font-size:11px;color:var(--muted);">▾ Meny</span>
+      </button>
+      <div id="user-menu" style="display:none;position:absolute;right:0;top:48px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);min-width:150px;z-index:200;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+        <button onclick="hideUserMenu();showPinChange();" style="display:block;width:100%;padding:13px 16px;text-align:left;background:none;border:none;color:var(--text);font-size:14px;cursor:pointer;border-bottom:1px solid var(--border);">🔑 Byt PIN</button>
+        <button onclick="hideUserMenu();doLogout();" style="display:block;width:100%;padding:13px 16px;text-align:left;background:none;border:none;color:var(--accent2);font-size:14px;cursor:pointer;">↩ Logga ut</button>
       </div>
     </div>
   </div>
@@ -665,7 +668,22 @@ function doLogout() {
   document.querySelectorAll('.admin-badge').forEach(el => el.remove());
 }
 
-// ── PIN-BYTE ──────────────────────────────────────────────────
+function toggleUserMenu() {
+  const menu = document.getElementById('user-menu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+function hideUserMenu() {
+  document.getElementById('user-menu').style.display = 'none';
+}
+// Stäng menyn vid klick utanför
+document.addEventListener('click', e => {
+  const menu = document.getElementById('user-menu');
+  if (menu && !menu.contains(e.target) && !e.target.closest('.nav-user')) {
+    menu.style.display = 'none';
+  }
+});
+
+
 function showForcedPinChange() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('pin-force-screen').style.display = 'flex';
