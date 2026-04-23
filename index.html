@@ -291,7 +291,8 @@
   </div>
   <div class="login-box">
     <div class="field"><label>Namn</label><input type="text" id="login-namn" placeholder="Ditt namn" autocomplete="name"></div>
-    <div class="field"><label>PIN-kod</label><input type="password" id="login-pin" placeholder="••••" maxlength="10" inputmode="numeric" autocomplete="current-password"></div>
+    <div class="field"><label>PIN-kod</label><input type="password" id="login-pin" placeholder="••••" maxlength="10" inputmode="numeric" autocomplete="current-password">
+    <div style="font-size:11px;color:var(--muted);margin-top:4px;">Minst 4 siffror</div></div>
     <div id="login-error" class="error-msg" style="display:none"></div>
     <button class="btn-primary" id="login-btn" onclick="doLogin()">Logga in</button>
   </div>
@@ -303,7 +304,10 @@
     <div class="nav-title">Riskcheck</div>
     <div class="nav-user">
       <strong id="nav-namn"></strong>
-      <button class="logout-btn" onclick="doLogout()">Logga ut</button>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="logout-btn" onclick="showPinChange()" id="pin-btn">Byt PIN</button>
+        <button class="logout-btn" onclick="doLogout()">Logga ut</button>
+      </div>
     </div>
   </div>
 
@@ -444,6 +448,51 @@
   <div class="footer">© 2026 | CARÅ</div>
 </div>
 
+<!-- TVINGAT PIN-BYTE -->
+<div id="pin-force-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;">
+  <div class="login-logo">🔑</div>
+  <div class="login-title" style="margin-bottom:4px;">Byt PIN-kod</div>
+  <div class="login-sub">Du måste byta PIN-kod för att fortsätta.</div>
+  <div style="width:100%;max-width:360px;">
+    <div class="field"><label>Ny PIN-kod</label><input type="password" id="force-ny-pin" placeholder="••••" maxlength="10" inputmode="numeric">
+    <div style="font-size:11px;color:var(--muted);margin-top:4px;">Minst 4 siffror</div></div>
+    <div class="field"><label>Bekräfta ny PIN-kod</label><input type="password" id="force-bekrafta-pin" placeholder="••••" maxlength="10" inputmode="numeric"></div>
+    <div id="force-pin-error" class="error-msg" style="display:none"></div>
+    <button class="btn-primary" onclick="saveForcedPin()">Spara ny PIN-kod</button>
+  </div>
+</div>
+
+<!-- PIN-BYTE MODAL -->
+<div id="pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:360px;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">Byt PIN-kod</div>
+    <div class="field"><label>Nuvarande PIN-kod</label><input type="password" id="modal-gammal-pin" placeholder="••••" maxlength="10" inputmode="numeric"></div>
+    <div class="field"><label>Ny PIN-kod</label><input type="password" id="modal-ny-pin" placeholder="••••" maxlength="10" inputmode="numeric">
+    <div style="font-size:11px;color:var(--muted);margin-top:4px;">Minst 4 siffror</div></div>
+    <div class="field"><label>Bekräfta ny PIN-kod</label><input type="password" id="modal-bekrafta-pin" placeholder="••••" maxlength="10" inputmode="numeric"></div>
+    <div id="modal-pin-error" class="error-msg" style="display:none"></div>
+    <button class="btn-primary" onclick="savePin()">Spara</button>
+    <button class="btn-secondary" onclick="hidePinModal()">Avbryt</button>
+  </div>
+</div>
+
+<!-- ADMIN ÅTERSTÄLL PIN MODAL -->
+<div id="reset-pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:360px;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Återställ PIN-kod</div>
+    <div id="reset-pin-namn" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></div>
+    <div class="field"><label>Ny PIN-kod</label><input type="text" id="reset-ny-pin" placeholder="T.ex. 1234" maxlength="10" inputmode="numeric">
+    <div style="font-size:11px;color:var(--muted);margin-top:4px;">Minst 4 siffror</div></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <input type="checkbox" id="reset-tvinga" style="width:18px;height:18px;cursor:pointer;">
+      <label for="reset-tvinga" style="font-size:13px;cursor:pointer;margin-bottom:0;">Tvinga PIN-byte vid nästa inloggning</label>
+    </div>
+    <div id="reset-pin-error" class="error-msg" style="display:none"></div>
+    <button class="btn-primary" onclick="saveResetPin()">Spara</button>
+    <button class="btn-secondary" onclick="hideResetPinModal()">Avbryt</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -560,7 +609,11 @@ async function doLogin() {
     }
 
     currentUser = user;
-    startApp();
+    if (user.tvinga_pin_byte) {
+      showForcedPinChange();
+    } else {
+      startApp();
+    }
   } catch(e) {
     showLoginError('Kunde inte ansluta till databasen. Kontrollera internetanslutningen.');
   } finally { btn.disabled = false; btn.textContent = 'Logga in'; }
@@ -612,7 +665,60 @@ function doLogout() {
   document.querySelectorAll('.admin-badge').forEach(el => el.remove());
 }
 
-// ── INIT ──────────────────────────────────────────────────────
+// ── PIN-BYTE ──────────────────────────────────────────────────
+function showForcedPinChange() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('pin-force-screen').style.display = 'flex';
+}
+
+async function saveForcedPin() {
+  const nyPin = document.getElementById('force-ny-pin').value.trim();
+  const bekrafta = document.getElementById('force-bekrafta-pin').value.trim();
+  const errEl = document.getElementById('force-pin-error');
+  errEl.style.display = 'none';
+  if (nyPin.length < 4) { errEl.textContent = 'PIN måste vara minst 4 siffror.'; errEl.style.display = 'block'; return; }
+  if (nyPin !== bekrafta) { errEl.textContent = 'PIN-koderna stämmer inte överens.'; errEl.style.display = 'block'; return; }
+  try {
+    await sbPatch('anvandare', currentUser.id, { pin: nyPin, tvinga_pin_byte: false });
+    currentUser.pin = nyPin;
+    currentUser.tvinga_pin_byte = false;
+    document.getElementById('pin-force-screen').style.display = 'none';
+    document.getElementById('force-ny-pin').value = '';
+    document.getElementById('force-bekrafta-pin').value = '';
+    showToast('✓ PIN-kod uppdaterad');
+    startApp();
+  } catch(e) { errEl.textContent = 'Kunde inte spara. Kontrollera anslutningen.'; errEl.style.display = 'block'; }
+}
+
+function showPinChange() {
+  document.getElementById('modal-gammal-pin').value = '';
+  document.getElementById('modal-ny-pin').value = '';
+  document.getElementById('modal-bekrafta-pin').value = '';
+  document.getElementById('modal-pin-error').style.display = 'none';
+  document.getElementById('pin-modal').style.display = 'flex';
+}
+function hidePinModal() {
+  document.getElementById('pin-modal').style.display = 'none';
+}
+
+async function savePin() {
+  const gammal = document.getElementById('modal-gammal-pin').value.trim();
+  const nyPin = document.getElementById('modal-ny-pin').value.trim();
+  const bekrafta = document.getElementById('modal-bekrafta-pin').value.trim();
+  const errEl = document.getElementById('modal-pin-error');
+  errEl.style.display = 'none';
+  if (gammal !== currentUser.pin) { errEl.textContent = 'Nuvarande PIN-kod stämmer inte.'; errEl.style.display = 'block'; return; }
+  if (nyPin.length < 4) { errEl.textContent = 'Ny PIN måste vara minst 4 siffror.'; errEl.style.display = 'block'; return; }
+  if (nyPin !== bekrafta) { errEl.textContent = 'PIN-koderna stämmer inte överens.'; errEl.style.display = 'block'; return; }
+  try {
+    await sbPatch('anvandare', currentUser.id, { pin: nyPin });
+    currentUser.pin = nyPin;
+    hidePinModal();
+    showToast('✓ PIN-kod uppdaterad');
+  } catch(e) { errEl.textContent = 'Kunde inte spara. Kontrollera anslutningen.'; errEl.style.display = 'block'; }
+}
+
+
 function setTodayDefaults() {
   const today = new Date().toISOString().split('T')[0];
   const now = new Date().toTimeString().slice(0,5);
@@ -1012,6 +1118,7 @@ async function loadAnvandare() {
         </div>
         <div style="display:flex;gap:6px;">
           ${isLocked && u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--green);font-size:12px;width:auto;padding:0 10px;" onclick="unlockUser('${u.id}', '${u.namn}')" title="Lås upp">🔓</button>` : ''}
+          ${u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--muted);font-size:12px;width:auto;padding:0 10px;" onclick="showResetPin('${u.id}', '${u.namn}')" title="Återställ PIN">🔑</button>` : ''}
           ${u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--muted);font-size:12px;width:auto;padding:0 10px;" onclick="toggleRole('${u.id}', '${u.roll}', '${u.namn}')" title="Byt roll">⇄</button>` : ''}
           ${u.id !== currentUser.id ? `<button class="user-delete-btn" onclick="deleteUser('${u.id}', '${u.namn}')" title="Ta bort">🗑</button>` : ''}
           ${u.id === currentUser.id ? `<span style="font-size:11px;color:var(--muted);padding:0 4px;">Du</span>` : ''}
@@ -1039,6 +1146,35 @@ async function addUser() {
   } catch(e) { showToast('Kunde inte lägga till användare.', 'error'); }
   finally { btn.disabled = false; btn.textContent = 'Lägg till användare'; }
 }
+
+let resetPinUserId = null;
+
+function showResetPin(id, namn) {
+  resetPinUserId = id;
+  document.getElementById('reset-pin-namn').textContent = namn;
+  document.getElementById('reset-ny-pin').value = '';
+  document.getElementById('reset-tvinga').checked = false;
+  document.getElementById('reset-pin-error').style.display = 'none';
+  document.getElementById('reset-pin-modal').style.display = 'flex';
+}
+function hideResetPinModal() {
+  document.getElementById('reset-pin-modal').style.display = 'none';
+  resetPinUserId = null;
+}
+async function saveResetPin() {
+  const nyPin = document.getElementById('reset-ny-pin').value.trim();
+  const tvinga = document.getElementById('reset-tvinga').checked;
+  const errEl = document.getElementById('reset-pin-error');
+  errEl.style.display = 'none';
+  if (nyPin.length < 4) { errEl.textContent = 'PIN måste vara minst 4 siffror.'; errEl.style.display = 'block'; return; }
+  try {
+    await sbPatch('anvandare', resetPinUserId, { pin: nyPin, tvinga_pin_byte: tvinga });
+    hideResetPinModal();
+    showToast('✓ PIN-kod återställd');
+    loadAnvandare();
+  } catch(e) { errEl.textContent = 'Kunde inte spara. Kontrollera anslutningen.'; errEl.style.display = 'block'; }
+}
+
 
 async function unlockUser(id, namn) {
   if (!confirm(`Lås upp ${namn}?`)) return;
