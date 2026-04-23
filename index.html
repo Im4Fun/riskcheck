@@ -1175,7 +1175,6 @@ async function saveResetPin() {
   } catch(e) { errEl.textContent = 'Kunde inte spara. Kontrollera anslutningen.'; errEl.style.display = 'block'; }
 }
 
-
 async function unlockUser(id, namn) {
   if (!confirm(`Lås upp ${namn}?`)) return;
   try {
@@ -1184,7 +1183,6 @@ async function unlockUser(id, namn) {
     loadAnvandare();
   } catch(e) { showToast('Kunde inte låsa upp användaren.', 'error'); }
 }
-
 
 async function toggleRole(id, currentRoll, namn) {
   const nyRoll = currentRoll === 'admin' ? 'personal' : 'admin';
@@ -1196,7 +1194,6 @@ async function toggleRole(id, currentRoll, namn) {
     loadAnvandare();
   } catch(e) { showToast('Kunde inte byta roll.', 'error'); }
 }
-
 
 async function deleteUser(id, namn) {
   if (!confirm(`Ta bort ${namn}?`)) return;
