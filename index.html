@@ -409,6 +409,11 @@
         </select>
       </div>
     </div>
+    <div class="field" style="margin-bottom:12px;">
+      <select id="filter-avdelning" onchange="renderAdmin()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+        <option value="">Alla avdelningar/skift</option>
+      </select>
+    </div>
     <div id="admin-period-summary" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;font-size:13px;color:var(--muted);">
     </div>
     <div id="admin-content"></div>
@@ -428,7 +433,8 @@
     <div class="section-header" style="margin-top:8px">Lägg till användare</div>
     <div class="field"><label>Namn</label><input type="text" id="ny-namn" placeholder="För- och efternamn"></div>
     <div class="row-2">
-      <div class="field"><label>PIN-kod</label><input type="text" id="ny-pin" placeholder="T.ex. 1234" inputmode="numeric" maxlength="10"></div>
+      <div class="field"><label>PIN-kod</label><input type="text" id="ny-pin" placeholder="T.ex. 1234" inputmode="numeric" maxlength="10">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Minst 4 siffror</div></div>
       <div class="field"><label>Roll</label>
         <select id="ny-roll" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;">
           <option value="personal">Personal</option>
@@ -436,10 +442,23 @@
         </select>
       </div>
     </div>
+    <div class="field"><label>Avdelning/Skift</label>
+      <select id="ny-avdelning" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;" onchange="handleAvdelningChange('ny-avdelning','ny-avdelning-custom')">
+        <option value="">— Välj avdelning/skift —</option>
+      </select>
+      <input type="text" id="ny-avdelning-custom" placeholder="Ange avdelning/skift" style="display:none;margin-top:8px;">
+    </div>
     <button class="btn-primary" id="add-user-btn" onclick="addUser()">Lägg till användare</button>
 
     <div class="section-header">Befintliga användare</div>
     <div id="anvandare-list"></div>
+
+    <div class="section-header">Hantera avdelningar/skift</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="text" id="ny-avdelning-namn" placeholder="Ny avdelning/skift" style="flex:1;">
+      <button class="btn-primary" style="width:auto;padding:11px 16px;margin-top:0;" onclick="addAvdelning()">+ Lägg till</button>
+    </div>
+    <div id="avdelningar-list"></div>
   </div>
 
   <div class="detail" id="detail-view">
@@ -493,6 +512,23 @@
     <div id="reset-pin-error" class="error-msg" style="display:none"></div>
     <button class="btn-primary" onclick="saveResetPin()">Spara</button>
     <button class="btn-secondary" onclick="hideResetPinModal()">Avbryt</button>
+  </div>
+</div>
+
+<!-- REDIGERA AVDELNING MODAL -->
+<div id="edit-avdelning-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:360px;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Byt avdelning/skift</div>
+    <div id="edit-avdelning-namn" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></div>
+    <div class="field"><label>Avdelning/Skift</label>
+      <select id="edit-avdelning-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;" onchange="handleAvdelningChange('edit-avdelning-select','edit-avdelning-custom')">
+        <option value="">— Välj avdelning/skift —</option>
+      </select>
+      <input type="text" id="edit-avdelning-custom" placeholder="Ange avdelning/skift" style="display:none;margin-top:8px;">
+    </div>
+    <div id="edit-avdelning-error" class="error-msg" style="display:none"></div>
+    <button class="btn-primary" onclick="saveEditAvdelning()">Spara</button>
+    <button class="btn-secondary" onclick="hideEditAvdelningModal()">Avbryt</button>
   </div>
 </div>
 
@@ -942,6 +978,17 @@ async function loadMyRecords() {
 async function loadAllRecords() {
   try {
     allRecords = await sbGet('rapporter', '');
+    const users = await sbGet('anvandare', 'order=namn.asc');
+    // Build user->avdelning map
+    window.userAvdelningMap = {};
+    users.forEach(u => { window.userAvdelningMap[u.id] = u.avdelning || ''; });
+    // Populate avdelning filter
+    const avd = [...new Set(users.map(u => u.avdelning).filter(Boolean))].sort();
+    const sel = document.getElementById('filter-avdelning');
+    if (sel) {
+      const current = sel.value;
+      sel.innerHTML = '<option value="">Alla avdelningar/skift</option>' + avd.map(a => `<option value="${a}" ${a === current ? 'selected' : ''}>${a}</option>`).join('');
+    }
     renderAdmin();
     populateYearFilter();
   } catch(e) { console.error(e); }
@@ -974,6 +1021,8 @@ function renderAdmin() {
   let filtered = adminFilter === 'alla' ? allRecords : allRecords.filter(r => r.typ === adminFilter);
   if (year) filtered = filtered.filter(r => r.datum?.startsWith(year));
   if (month) filtered = filtered.filter(r => r.datum?.substring(5,7) === month);
+  const avdelningFilter = document.getElementById('filter-avdelning')?.value || '';
+  if (avdelningFilter) filtered = filtered.filter(r => (window.userAvdelningMap?.[r.anvandare_id] || '') === avdelningFilter);
 
   // Period summary
   if ((year || month) && summaryEl) {
@@ -1076,6 +1125,16 @@ function renderStats() {
   const personCount = {};
   allRecords.forEach(r => { const n = r.anvandare_namn || 'Okänd'; personCount[n] = (personCount[n]||0)+1; });
   const maxPerson = Math.max(...Object.values(personCount), 1);
+  // Per avdelning
+  const avdCount = {};
+  allRecords.forEach(r => {
+    const avd = window.userAvdelningMap?.[r.anvandare_id] || 'Okänd';
+    avdCount[avd] = (avdCount[avd]||0)+1;
+  });
+  const maxAvd = Math.max(...Object.values(avdCount), 1);
+  const avdHTML = Object.entries(avdCount).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
+    `<div class="bar-row"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(v/maxAvd*100).toFixed(0)}%;background:var(--accent)"></div></div><span class="bar-count">${v}</span></div>`
+  ).join('') || '<p style="font-size:13px;color:var(--muted)">Ingen data</p>';
   const orsakHTML = Object.entries(orsakCount).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
     `<div class="bar-row"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(v/maxOrsak*100).toFixed(0)}%"></div></div><span class="bar-count">${v}</span></div>`
   ).join('') || '<p style="font-size:13px;color:var(--muted)">Ingen data ännu</p>';
@@ -1089,17 +1148,90 @@ function renderStats() {
       <div class="stat-card"><div class="stat-number" style="color:var(--green)">${invs}</div><div class="stat-label">Inventeringar</div></div>
       <div class="stat-card"><div class="stat-number" style="font-size:18px;color:var(--muted)">${allRecords.length ? allRecords[0].datum || '—' : '—'}</div><div class="stat-label">Senaste rapport</div></div>
     </div>
+    <div class="section-header">Rapporter per avdelning/skift</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">${avdHTML}</div>
     <div class="section-header">Orsaker (Risk/Tillbud)</div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">${orsakHTML}</div>
     <div class="section-header">Rapporter per person</div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">${personHTML}</div>`;
 }
 
-// ── ANVÄNDARE ─────────────────────────────────────────────────
+// ── AVDELNINGAR ───────────────────────────────────────────────
+let avdelningar = [];
+
+async function loadAvdelningar() {
+  try {
+    avdelningar = await sbGet('avdelningar', 'order=sortering.asc');
+    populateAvdelningDropdowns();
+    renderAvdelningarList();
+  } catch(e) { console.error(e); }
+}
+
+function populateAvdelningDropdowns() {
+  const opts = avdelningar.map(a => `<option value="${a.namn}">${a.namn}</option>`).join('');
+  const customOpt = '<option value="__custom__">+ Skriv eget...</option>';
+  ['ny-avdelning'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const current = el.value;
+      el.innerHTML = '<option value="">— Välj avdelning/skift —</option>' + opts + customOpt;
+      if (current) el.value = current;
+    }
+  });
+}
+
+function handleAvdelningChange(selectId, inputId) {
+  const sel = document.getElementById(selectId);
+  const inp = document.getElementById(inputId);
+  if (!sel || !inp) return;
+  inp.style.display = sel.value === '__custom__' ? 'block' : 'none';
+  if (sel.value !== '__custom__') inp.value = '';
+}
+
+function getAvdelningValue(selectId, inputId) {
+  const sel = document.getElementById(selectId);
+  const inp = document.getElementById(inputId);
+  if (sel.value === '__custom__') return inp.value.trim();
+  return sel.value;
+}
+
+function renderAvdelningarList() {
+  const el = document.getElementById('avdelningar-list');
+  if (!el) return;
+  if (!avdelningar.length) { el.innerHTML = '<p style="font-size:13px;color:var(--muted);">Inga avdelningar ännu.</p>'; return; }
+  el.innerHTML = avdelningar.map(a => `
+    <div class="user-row" style="margin-bottom:8px;">
+      <span style="font-size:14px;font-weight:500;">${a.namn}</span>
+      <button class="user-delete-btn" onclick="deleteAvdelning('${a.id}', '${a.namn}')" title="Ta bort">🗑</button>
+    </div>`).join('');
+}
+
+async function addAvdelning() {
+  const namn = document.getElementById('ny-avdelning-namn').value.trim();
+  if (!namn) { showToast('⚠️ Ange ett namn', 'error'); return; }
+  try {
+    await sbInsert('avdelningar', { namn, sortering: avdelningar.length + 1 });
+    document.getElementById('ny-avdelning-namn').value = '';
+    showToast('✓ Avdelning tillagd');
+    await loadAvdelningar();
+  } catch(e) { showToast('Kunde inte lägga till avdelning.', 'error'); }
+}
+
+async function deleteAvdelning(id, namn) {
+  if (!confirm(`Ta bort "${namn}"?`)) return;
+  try {
+    await sbDelete('avdelningar', id);
+    showToast('🗑 Avdelning borttagen');
+    await loadAvdelningar();
+  } catch(e) { showToast('Kunde inte ta bort avdelning.', 'error'); }
+}
+
+
 async function loadAnvandare() {
   const el = document.getElementById('anvandare-list');
   el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Laddar...</div></div>';
   try {
+    await loadAvdelningar();
     const users = await sbGet('anvandare', 'order=namn.asc');
     if (!users.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Inga användare.</div></div>'; return; }
 
@@ -1132,10 +1264,12 @@ async function loadAnvandare() {
             <span class="user-role ${u.roll}">${u.roll === 'admin' ? 'Admin' : 'Personal'}</span>
             ${isLocked ? `<span style="font-size:10px;font-weight:700;background:rgba(232,93,74,0.15);color:var(--accent2);border:1px solid rgba(232,93,74,0.3);padding:2px 7px;border-radius:4px;letter-spacing:0.5px;">🔒 LÅST</span>` : ''}
           </div>
+          ${u.avdelning ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;">📍 ${u.avdelning}</div>` : ''}
           ${autoCount > 0 ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;">⏱ ${autoCount} automatisk upplåsning${autoCount !== 1 ? 'ar' : ''} senaste 30 dagarna</div>` : ''}
         </div>
         <div style="display:flex;gap:6px;">
           ${isLocked && u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--green);font-size:12px;width:auto;padding:0 10px;" onclick="unlockUser('${u.id}', '${u.namn}')" title="Lås upp">🔓</button>` : ''}
+          ${u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--muted);font-size:12px;width:auto;padding:0 10px;" onclick="showEditAvdelning('${u.id}', '${u.namn}', '${u.avdelning || ''}')" title="Byt avdelning">📍</button>` : ''}
           ${u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--muted);font-size:12px;width:auto;padding:0 10px;" onclick="showResetPin('${u.id}', '${u.namn}')" title="Återställ PIN">🔑</button>` : ''}
           ${u.id !== currentUser.id ? `<button class="user-delete-btn" style="color:var(--muted);font-size:12px;width:auto;padding:0 10px;" onclick="toggleRole('${u.id}', '${u.roll}', '${u.namn}')" title="Byt roll">⇄</button>` : ''}
           ${u.id !== currentUser.id ? `<button class="user-delete-btn" onclick="deleteUser('${u.id}', '${u.namn}')" title="Ta bort">🗑</button>` : ''}
@@ -1150,15 +1284,18 @@ async function addUser() {
   const namn = document.getElementById('ny-namn').value.trim();
   const pin = document.getElementById('ny-pin').value.trim();
   const roll = document.getElementById('ny-roll').value;
+  const avdelning = getAvdelningValue('ny-avdelning', 'ny-avdelning-custom');
   if (!namn || !pin) { showToast('⚠️ Fyll i namn och PIN', 'error'); return; }
   if (pin.length < 4) { showToast('⚠️ PIN måste vara minst 4 siffror', 'error'); return; }
   const btn = document.getElementById('add-user-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sparar...';
   try {
-    await sbInsert('anvandare', { namn, pin, roll });
+    await sbInsert('anvandare', { namn, pin, roll, avdelning });
     document.getElementById('ny-namn').value = '';
     document.getElementById('ny-pin').value = '';
     document.getElementById('ny-roll').value = 'personal';
+    document.getElementById('ny-avdelning').value = '';
+    document.getElementById('ny-avdelning-custom').style.display = 'none';
     showToast('✓ Användare tillagd');
     loadAnvandare();
   } catch(e) { showToast('Kunde inte lägga till användare.', 'error'); }
@@ -1192,6 +1329,46 @@ async function saveResetPin() {
     loadAnvandare();
   } catch(e) { errEl.textContent = 'Kunde inte spara. Kontrollera anslutningen.'; errEl.style.display = 'block'; }
 }
+
+let editAvdelningUserId = null;
+
+function showEditAvdelning(id, namn, current) {
+  editAvdelningUserId = id;
+  document.getElementById('edit-avdelning-namn').textContent = namn;
+  document.getElementById('edit-avdelning-error').style.display = 'none';
+  // Populate dropdown
+  const sel = document.getElementById('edit-avdelning-select');
+  const opts = avdelningar.map(a => `<option value="${a.namn}" ${a.namn === current ? 'selected' : ''}>${a.namn}</option>`).join('');
+  sel.innerHTML = '<option value="">— Välj avdelning/skift —</option>' + opts + '<option value="__custom__">+ Skriv eget...</option>';
+  // Check if current value is custom
+  const isCustom = current && !avdelningar.some(a => a.namn === current);
+  if (isCustom) {
+    sel.value = '__custom__';
+    document.getElementById('edit-avdelning-custom').style.display = 'block';
+    document.getElementById('edit-avdelning-custom').value = current;
+  } else {
+    document.getElementById('edit-avdelning-custom').style.display = 'none';
+    document.getElementById('edit-avdelning-custom').value = '';
+  }
+  document.getElementById('edit-avdelning-modal').style.display = 'flex';
+}
+function hideEditAvdelningModal() {
+  document.getElementById('edit-avdelning-modal').style.display = 'none';
+  editAvdelningUserId = null;
+}
+async function saveEditAvdelning() {
+  const avdelning = getAvdelningValue('edit-avdelning-select', 'edit-avdelning-custom');
+  try {
+    await sbPatch('anvandare', editAvdelningUserId, { avdelning });
+    hideEditAvdelningModal();
+    showToast('✓ Avdelning uppdaterad');
+    loadAnvandare();
+  } catch(e) {
+    document.getElementById('edit-avdelning-error').textContent = 'Kunde inte spara.';
+    document.getElementById('edit-avdelning-error').style.display = 'block';
+  }
+}
+
 
 async function unlockUser(id, namn) {
   if (!confirm(`Lås upp ${namn}?`)) return;
