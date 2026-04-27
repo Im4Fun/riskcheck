@@ -13,8 +13,9 @@ A mobile-first web app for digital risk and incident reporting, built as a singl
 - **Color-coded responses** — green indicates a safe answer, red indicates a risk or concern, making post-task reviews quick and intuitive
 - **Follow-up questions** — context-sensitive sub-questions, such as lone worker communication checks
 - **Login with name + PIN** — no email or account required, with automatic lockout after 3 failed attempts (unlocks after 30 minutes or manually by admin)
-- **Admin view** — see all reports across all users, filter by type and by year/month with a period summary showing report counts, delete reports
-- **User management** — admins can add new users, remove existing ones, toggle roles, reset PIN codes and optionally force a PIN change at next login
+- **Admin view** — see all reports across all users, filter by type, year/month and department/shift with a period summary showing report counts, delete reports
+- **User management** — admins can add new users, remove existing ones, toggle roles, reset PIN codes, force PIN change at next login, and assign department/shift
+- **Department/shift management** — admins can create, edit and delete departments/shifts directly in the app. Users are assigned to a department at registration and can be reassigned at any time
 - **PIN self-service** — users can change their own PIN at any time from the nav bar
 - **Statistics** — charts showing report counts, root cause frequency, and reports per person
 - **Export** — download all data as CSV (semicolon-separated, UTF-8 BOM for Excel compatibility) or JSON
@@ -97,6 +98,25 @@ grant select, insert on inloggningar to anon;
 
 create policy "Läs inloggningar" on inloggningar for select using (true);
 create policy "Skapa inloggning" on inloggningar for insert with check (true);
+
+create table avdelningar (
+  id uuid primary key default gen_random_uuid(),
+  namn text not null,
+  sortering int default 0,
+  sparad timestamptz default now()
+);
+
+alter table avdelningar enable row level security;
+
+grant select, insert, update, delete on avdelningar to anon;
+
+create policy "Läs avdelningar" on avdelningar for select using (true);
+create policy "Hantera avdelningar" on avdelningar for insert with check (true);
+create policy "Uppdatera avdelningar" on avdelningar for update to anon using (true);
+create policy "Ta bort avdelningar" on avdelningar for delete to anon using (true);
+
+alter table anvandare add column avdelning text default '';
+alter table anvandare add column tvinga_pin_byte boolean default false;
 ```
 
 ### 2. Add users
