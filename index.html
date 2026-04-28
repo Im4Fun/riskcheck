@@ -1405,9 +1405,10 @@ async function exportCSV() {
   await loadAllRecords();
   if (!allRecords.length) { showToast('Inga data att exportera', 'error'); return; }
   const nejKommentarer = arr => (arr||[]).filter(i => i.svar === 'no' && i.kommentar).map(i => `${i.fraga}: ${i.kommentar}`).join(' | ');
-  const rows = [['ID','Typ','Datum','Tid','Plats','Person','Beskrivning','Orsaker','Åtgärder','Nej-kommentarer (Har du tänkt på)','Nej-kommentarer (Risk för)','Nej-kommentarer (Var finns)','Övriga kommentarer','Sparad']];
+  const rows = [['ID','Typ','Datum','Tid','Plats','Person','Avdelning/Skift','Beskrivning','Orsaker','Åtgärder','Nej-kommentarer (Har du tänkt på)','Nej-kommentarer (Risk för)','Nej-kommentarer (Var finns)','Övriga kommentarer','Sparad']];
   allRecords.forEach(r => rows.push([
     r.id, r.typ, r.datum||'', r.tid||'', r.plats||'', r.anvandare_namn||'',
+    window.userAvdelningMap?.[r.anvandare_id] || '',
     (r.beskrivning||'').replace(/\n/g,' '), (r.orsaker||[]).join('; '), (r.atgarder||'').replace(/\n/g,' '),
     nejKommentarer(r.tankt), nejKommentarer(r.risker), nejKommentarer(r.varfinns),
     (r.kommentar||'').replace(/\n/g,' '), r.sparad||''
