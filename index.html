@@ -359,7 +359,10 @@
 
     <div id="form-inv">
       <div class="section-header">Grundinformation</div>
-      <div class="field"><label>Datum</label><input type="date" id="i-datum"></div>
+      <div class="row-2">
+        <div class="field"><label>Datum</label><input type="date" id="i-datum"></div>
+        <div class="field"><label>Klockslag</label><input type="time" id="i-tid"></div>
+      </div>
       <div class="field"><label>Plats - Arbetsuppgift</label><input type="text" id="i-plats" placeholder="T.ex. SW4 - Valsdemontering"></div>
       <div class="section-header">Har du tänkt på:</div>
       <div class="checklist-section" id="tankt-section"></div>
@@ -777,6 +780,7 @@ function setTodayDefaults() {
   document.getElementById('r-datum').value = today;
   document.getElementById('r-tid').value = now;
   document.getElementById('i-datum').value = today;
+  document.getElementById('i-tid').value = now;
 }
 function buildInvChecklist() {
   buildSection('tankt-section', TANKT_ITEMS);
@@ -939,7 +943,9 @@ async function saveInv() {
   try {
     await sbInsert('rapporter', {
       anvandare_id: currentUser.id, anvandare_namn: currentUser.namn, typ: 'inv',
-      datum: document.getElementById('i-datum').value, plats,
+      datum: document.getElementById('i-datum').value,
+      tid: document.getElementById('i-tid').value,
+      plats,
       kommentar: document.getElementById('i-kommentar').value.trim(),
       tankt: getSection('tankt-section', TANKT_ITEMS),
       risker: getSection('risk-section', RISK_ITEMS),
