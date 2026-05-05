@@ -9,7 +9,7 @@ A mobile-first web app for digital risk and incident reporting, built as a singl
 - **Two report types**
   - *Risk/Incident Report* — log hazards, near-misses, root causes, and proposed actions
   - *Risk Inventory* — pre-task safety checklist with structured yes/no/N/A responses
-- **Smart validation** — mandatory comment fields appear automatically when a critical answer is given (e.g. "Yes, this risk exists" or "No, I can't find the fire equipment")
+- **Smart validation** — mandatory comment fields appear automatically when a critical answer is given (e.g. "Yes, this risk exists" or "No, I can't find the fire equipment"). For risk inventories, all checklist questions must be answered before saving. For risk/incident reports, all text fields and at least one root cause must be filled in
 - **Color-coded responses** — green indicates a safe answer, red indicates a risk or concern, making post-task reviews quick and intuitive
 - **Follow-up questions** — context-sensitive sub-questions, such as lone worker communication checks
 - **Login with name + PIN** — no email or account required, with automatic lockout after 3 failed attempts (unlocks after 30 minutes or manually by admin)
