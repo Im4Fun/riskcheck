@@ -720,7 +720,6 @@ document.addEventListener('click', e => {
   }
 });
 
-
 function showForcedPinChange() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('pin-force-screen').style.display = 'flex';
@@ -772,7 +771,6 @@ async function savePin() {
     showToast('✓ PIN-kod uppdaterad');
   } catch(e) { errEl.textContent = 'Kunde inte spara. Kontrollera anslutningen.'; errEl.style.display = 'block'; }
 }
-
 
 function setTodayDefaults() {
   const today = new Date().toISOString().split('T')[0];
@@ -827,6 +825,7 @@ function setTri(sectionId, idx, val) {
   row.querySelectorAll(':scope > div > .tri-toggle .tri-btn').forEach(b => b.classList.remove('active'));
   row.querySelector(`:scope > div > .tri-toggle .tri-btn.${val}`).classList.add('active');
   row.dataset.val = val;
+  row.style.background = '';
   if (sectionId === 'tankt-section' && idx === 9) {
     const sub = document.getElementById('sub-ensamarbete');
     if (val === 'yes') { sub.style.display = 'block'; }
@@ -880,15 +879,25 @@ function toggleCheck(el) {
 async function saveRisk() {
   const plats = document.getElementById('r-plats').value.trim();
   const beskrivning = document.getElementById('r-beskrivning').value.trim();
+  const atgarder = document.getElementById('r-atgarder').value.trim();
+  const orsaker = Array.from(document.querySelectorAll('#orsak-grid .check-item.checked input')).map(i => i.value);
+
   if (!plats || !beskrivning) { showToast('⚠️ Fyll i plats och beskrivning', 'error'); return; }
+  if (!atgarder) { showToast('⚠️ Fyll i förslag på åtgärder', 'error'); return; }
+  if (!orsaker.length) {
+    document.getElementById('orsak-grid').style.outline = '2px solid var(--accent2)';
+    document.getElementById('orsak-grid').style.borderRadius = 'var(--radius)';
+    showToast('⚠️ Välj minst en orsak', 'error'); return;
+  }
+  document.getElementById('orsak-grid').style.outline = '';
+
   const btn = document.getElementById('save-risk-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sparar...';
-  const orsaker = Array.from(document.querySelectorAll('#orsak-grid .check-item.checked input')).map(i => i.value);
   try {
     await sbInsert('rapporter', {
       anvandare_id: currentUser.id, anvandare_namn: currentUser.namn, typ: 'risk',
       datum: document.getElementById('r-datum').value, tid: document.getElementById('r-tid').value,
-      plats, beskrivning, atgarder: document.getElementById('r-atgarder').value.trim(), orsaker
+      plats, beskrivning, atgarder, orsaker
     });
     clearRiskForm(); showToast('✓ Rapport sparad'); updateBadge();
   } catch(e) { showToast('Kunde inte spara. Kontrollera anslutningen.', 'error'); }
@@ -915,6 +924,25 @@ async function saveInv() {
     { id: 'risk-section', items: RISK_ITEMS },
     { id: 'varfinns-section', items: VARFINNS_ITEMS }
   ];
+
+  // Kontrollera att alla frågor är besvarade
+  let missingAnswers = false;
+  sections.forEach(({ id, items }) => {
+    items.forEach((_, i) => {
+      const row = document.getElementById(`row-${id}-${i}`);
+      if (!row?.dataset.val) {
+        row.style.background = 'rgba(232,93,74,0.08)';
+        missingAnswers = true;
+      } else {
+        row.style.background = '';
+      }
+    });
+  });
+  if (missingAnswers) {
+    showToast('⚠️ Besvara alla frågor innan du sparar', 'error');
+    btn.disabled = false; btn.textContent = 'Spara inventering'; return;
+  }
+
   let missingComments = false;
   sections.forEach(({ id, items }) => {
     items.forEach((_, i) => {
@@ -959,6 +987,7 @@ async function saveInv() {
 function clearRiskForm() {
   ['r-plats','r-beskrivning','r-atgarder'].forEach(id => document.getElementById(id).value = '');
   document.querySelectorAll('#orsak-grid .check-item.checked').forEach(el => { el.classList.remove('checked'); el.querySelector('input').checked = false; });
+  document.getElementById('orsak-grid').style.outline = '';
   setTodayDefaults();
 }
 function clearInvForm() {
@@ -1230,7 +1259,6 @@ async function deleteAvdelning(id, namn) {
   } catch(e) { showToast('Kunde inte ta bort avdelning.', 'error'); }
 }
 
-
 async function loadAnvandare() {
   const el = document.getElementById('anvandare-list');
   el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Laddar...</div></div>';
@@ -1373,7 +1401,6 @@ async function saveEditAvdelning() {
   }
 }
 
-
 async function unlockUser(id, namn) {
   if (!confirm(`Lås upp ${namn}?`)) return;
   try {
@@ -1403,7 +1430,6 @@ async function deleteUser(id, namn) {
     loadAnvandare();
   } catch(e) { showToast('Kunde inte ta bort användare.', 'error'); }
 }
-
 
 async function exportCSV() {
   await loadAllRecords();
