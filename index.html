@@ -421,6 +421,35 @@
   </div>
 
   <div class="page" id="page-statistik">
+    <div class="row-2" style="margin-bottom:8px;">
+      <div class="field" style="margin-bottom:0">
+        <select id="stats-year" onchange="renderStats()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+          <option value="">Alla år</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <select id="stats-month" onchange="renderStats()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+          <option value="">Alla månader</option>
+          <option value="01">Januari</option>
+          <option value="02">Februari</option>
+          <option value="03">Mars</option>
+          <option value="04">April</option>
+          <option value="05">Maj</option>
+          <option value="06">Juni</option>
+          <option value="07">Juli</option>
+          <option value="08">Augusti</option>
+          <option value="09">September</option>
+          <option value="10">Oktober</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <select id="stats-avdelning" onchange="renderStats()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+        <option value="">Alla avdelningar/skift</option>
+      </select>
+    </div>
     <div id="stats-content"></div>
     <div class="section-header" style="margin-top:24px">Exportera all data</div>
     <div class="export-row">
@@ -1015,15 +1044,25 @@ async function loadAllRecords() {
     // Build user->avdelning map
     window.userAvdelningMap = {};
     users.forEach(u => { window.userAvdelningMap[u.id] = u.avdelning || ''; });
-    // Populate avdelning filter
+    // Populate avdelning filter for both admin and stats
     const avd = [...new Set(users.map(u => u.avdelning).filter(Boolean))].sort();
-    const sel = document.getElementById('filter-avdelning');
-    if (sel) {
-      const current = sel.value;
-      sel.innerHTML = '<option value="">Alla avdelningar/skift</option>' + avd.map(a => `<option value="${a}" ${a === current ? 'selected' : ''}>${a}</option>`).join('');
-    }
+    ['filter-avdelning', 'stats-avdelning'].forEach(selId => {
+      const sel = document.getElementById(selId);
+      if (sel) {
+        const current = sel.value;
+        sel.innerHTML = '<option value="">Alla avdelningar/skift</option>' + avd.map(a => `<option value="${a}" ${a === current ? 'selected' : ''}>${a}</option>`).join('');
+      }
+    });
+    // Populate year filter for both admin and stats
+    const years = [...new Set(allRecords.map(r => r.datum?.substring(0,4)).filter(Boolean))].sort().reverse();
+    ['filter-year', 'stats-year'].forEach(selId => {
+      const sel = document.getElementById(selId);
+      if (sel) {
+        const current = sel.value;
+        sel.innerHTML = '<option value="">Alla år</option>' + years.map(y => `<option value="${y}" ${y === current ? 'selected' : ''}>${y}</option>`).join('');
+      }
+    });
     renderAdmin();
-    populateYearFilter();
   } catch(e) { console.error(e); }
 }
 
@@ -1149,22 +1188,31 @@ async function deleteCurrentRecord() {
 // ── STATS ─────────────────────────────────────────────────────
 function renderStats() {
   const el = document.getElementById('stats-content');
-  const total = allRecords.length;
-  const risks = allRecords.filter(r => r.typ === 'risk').length;
-  const invs = allRecords.filter(r => r.typ === 'inv').length;
+  const statsYear = document.getElementById('stats-year')?.value || '';
+  const statsMonth = document.getElementById('stats-month')?.value || '';
+  const statsAvd = document.getElementById('stats-avdelning')?.value || '';
+
+  let filtered = allRecords;
+  if (statsYear) filtered = filtered.filter(r => r.datum?.startsWith(statsYear));
+  if (statsMonth) filtered = filtered.filter(r => r.datum?.substring(5,7) === statsMonth);
+  if (statsAvd) filtered = filtered.filter(r => (window.userAvdelningMap?.[r.anvandare_id] || '') === statsAvd);
+
+  const total = filtered.length;
+  const risks = filtered.filter(r => r.typ === 'risk').length;
+  const invs = filtered.filter(r => r.typ === 'inv').length;
   const orsakCount = {};
-  allRecords.filter(r => r.typ === 'risk').forEach(r => { (r.orsaker||[]).forEach(o => orsakCount[o] = (orsakCount[o]||0)+1); });
+  filtered.filter(r => r.typ === 'risk').forEach(r => { (r.orsaker||[]).forEach(o => orsakCount[o] = (orsakCount[o]||0)+1); });
   const maxOrsak = Math.max(...Object.values(orsakCount), 1);
   const personCount = {};
-  allRecords.forEach(r => { const n = r.anvandare_namn || 'Okänd'; personCount[n] = (personCount[n]||0)+1; });
+  filtered.forEach(r => { const n = r.anvandare_namn || 'Okänd'; personCount[n] = (personCount[n]||0)+1; });
   const maxPerson = Math.max(...Object.values(personCount), 1);
-  // Per avdelning
   const avdCount = {};
-  allRecords.forEach(r => {
+  filtered.forEach(r => {
     const avd = window.userAvdelningMap?.[r.anvandare_id] || 'Okänd';
     avdCount[avd] = (avdCount[avd]||0)+1;
   });
   const maxAvd = Math.max(...Object.values(avdCount), 1);
+  const latestDate = filtered.length ? filtered[0].datum || '—' : '—';
   const avdHTML = Object.entries(avdCount).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
     `<div class="bar-row"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(v/maxAvd*100).toFixed(0)}%;background:var(--accent)"></div></div><span class="bar-count">${v}</span></div>`
   ).join('') || '<p style="font-size:13px;color:var(--muted)">Ingen data</p>';
@@ -1179,7 +1227,7 @@ function renderStats() {
       <div class="stat-card"><div class="stat-number">${total}</div><div class="stat-label">Totalt</div></div>
       <div class="stat-card"><div class="stat-number" style="color:var(--accent2)">${risks}</div><div class="stat-label">Risk/Tillbud</div></div>
       <div class="stat-card"><div class="stat-number" style="color:var(--green)">${invs}</div><div class="stat-label">Inventeringar</div></div>
-      <div class="stat-card"><div class="stat-number" style="font-size:18px;color:var(--muted)">${allRecords.length ? allRecords[0].datum || '—' : '—'}</div><div class="stat-label">Senaste rapport</div></div>
+      <div class="stat-card"><div class="stat-number" style="font-size:18px;color:var(--muted)">${latestDate}</div><div class="stat-label">Senaste rapport</div></div>
     </div>
     <div class="section-header">Rapporter per avdelning/skift</div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">${avdHTML}</div>
