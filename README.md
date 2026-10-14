@@ -122,7 +122,10 @@ alter table anvandare add column tvinga_pin_byte boolean default false;
 ### 2. Add users
 
 ```sql
--- Admin user
+-- Developer user (full access including user management)
+insert into anvandare (namn, pin, roll) values ('Your Name', 'your-pin', 'developer');
+
+-- Admin user (access to reports, statistics — not user management)
 insert into anvandare (namn, pin, roll) values ('Admin', 'your-pin', 'admin');
 
 -- Regular users
@@ -135,8 +138,10 @@ Open `index.html` and update the following constants near the top of the `<scrip
 
 ```javascript
 const SUPABASE_URL = 'https://your-project.supabase.co';
-const SUPABASE_KEY = 'your-publishable-api-key';
+const SUPABASE_KEY = 'sb_publishable_...';
 ```
+
+> **Note:** Supabase changed their API key format in 2026. The key now starts with `sb_publishable_` and is found under **Settings → API → Publishable key** in the Supabase dashboard. The old JWT format (`eyJ...`) no longer works.
 
 ### 4. Deploy
 
@@ -159,7 +164,11 @@ Log in with an admin account to access:
 - All reports from all users
 - Statistics and charts
 - CSV/JSON export
-- User management — add, remove, change roles, reset PIN codes and force PIN change at next login
+
+### Developer
+Log in with a developer account to access everything an admin can, plus:
+- User management — add, remove, change roles (Personal → Admin → Developer), reset PIN codes, force PIN change at next login, unlock locked accounts
+- Department/shift management — add, rename and delete departments
 
 ---
 
