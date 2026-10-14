@@ -240,6 +240,9 @@
     font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
     padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(245,166,35,0.3);
   }
+  .admin-badge.developer-badge {
+    background: rgba(138,99,210,0.15); color: #a78bfa; border: 1px solid rgba(138,99,210,0.35);
+  }
   .error-msg { color: var(--accent2); font-size: 13px; text-align: center; margin-top: 10px; }
   .filter-row { display: flex; gap: 8px; margin-bottom: 12px; }
   .filter-btn {
@@ -263,6 +266,7 @@
   }
   .user-role.admin { background: rgba(245,166,35,0.15); color: var(--accent); border: 1px solid rgba(245,166,35,0.3); }
   .user-role.personal { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .user-role.developer { background: rgba(138,99,210,0.15); color: #a78bfa; border: 1px solid rgba(138,99,210,0.35); }
   .user-delete-btn {
     background: none; border: 1px solid var(--border); border-radius: 8px;
     color: var(--accent2); font-size: 16px; width: 34px; height: 34px;
@@ -319,7 +323,7 @@
     <button class="tab" onclick="showTab('lista')">Rapporter <span class="badge" id="count-badge">0</span></button>
     <button class="tab admin-only" onclick="showTab('admin')" style="display:none">Admin</button>
     <button class="tab admin-only" onclick="showTab('statistik')" style="display:none">Stats</button>
-    <button class="tab admin-only" onclick="showTab('anvandare')" style="display:none">Användare</button>
+    <button class="tab developer-only" onclick="showTab('anvandare')" style="display:none">Användare</button>
   </div>
 
   <div class="page active" id="page-ny">
@@ -469,6 +473,7 @@
         <select id="ny-roll" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;">
           <option value="personal">Personal</option>
           <option value="admin">Admin</option>
+          <option value="developer">Developer</option>
         </select>
       </div>
     </div>
@@ -566,7 +571,7 @@
 
 <script>
 const SUPABASE_URL = 'https://hdebfrotvmcxyahiuuwb.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_CbSNx8U_9jIxTt-1f8_CTA_N35qbZ5o';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkZWJmcm90dm1jeHlhaGl1dXdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NDUyNDgsImV4cCI6MjA4OTUyMTI0OH0.KY2aWw_-avnXBpeNr9OLMnM-fZNS2UZH5sdIeePWSo4';
 
 const TANKT_ITEMS = [
   "Rätt och tillräcklig skyddsutrustning?","Ändamålsenliga verktyg?","Rätt plats/utrustning?",
@@ -717,9 +722,14 @@ function startApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('nav-namn').textContent = currentUser.namn;
-  if (currentUser.roll === 'admin') {
+  if (currentUser.roll === 'admin' || currentUser.roll === 'developer') {
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
-    document.getElementById('nav-namn').insertAdjacentHTML('afterend', ' <span class="admin-badge">Admin</span>');
+    const badgeLabel = currentUser.roll === 'developer' ? 'Developer' : 'Admin';
+    const badgeClass = currentUser.roll === 'developer' ? 'admin-badge developer-badge' : 'admin-badge';
+    document.getElementById('nav-namn').insertAdjacentHTML('afterend', ` <span class="${badgeClass}">${badgeLabel}</span>`);
+  }
+  if (currentUser.roll === 'developer') {
+    document.querySelectorAll('.developer-only').forEach(el => el.style.display = '');
   }
   setTodayDefaults(); buildInvChecklist(); loadMyRecords();
 }
@@ -731,6 +741,7 @@ function doLogout() {
   document.getElementById('login-pin').value = '';
   document.getElementById('login-error').style.display = 'none';
   document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.developer-only').forEach(el => el.style.display = 'none');
   document.querySelectorAll('.admin-badge').forEach(el => el.remove());
 }
 
@@ -1137,7 +1148,7 @@ function showDetail(id, isAdmin) {
   if (!r) return;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('detail-view').classList.add('active');
-  document.getElementById('delete-btn').style.display = currentUser.roll === 'admin' ? 'block' : 'none';
+  document.getElementById('delete-btn').style.display = (currentUser.roll === 'admin' || currentUser.roll === 'developer') ? 'block' : 'none';
   const svarEmoji = v => v === 'yes' ? '✅' : v === 'no' ? '❌' : v === 'na' ? '➖' : '⬜';
   let html = '';
   if (r.typ === 'risk') {
@@ -1341,7 +1352,7 @@ async function loadAnvandare() {
         <div class="user-info">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <span class="user-name">${u.namn}</span>
-            <span class="user-role ${u.roll}">${u.roll === 'admin' ? 'Admin' : 'Personal'}</span>
+            <span class="user-role ${u.roll}">${u.roll === 'developer' ? 'Developer' : u.roll === 'admin' ? 'Admin' : 'Personal'}</span>
             ${isLocked ? `<span style="font-size:10px;font-weight:700;background:rgba(232,93,74,0.15);color:var(--accent2);border:1px solid rgba(232,93,74,0.3);padding:2px 7px;border-radius:4px;letter-spacing:0.5px;">🔒 LÅST</span>` : ''}
           </div>
           ${u.avdelning ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;">📍 ${u.avdelning}</div>` : ''}
@@ -1459,8 +1470,10 @@ async function unlockUser(id, namn) {
 }
 
 async function toggleRole(id, currentRoll, namn) {
-  const nyRoll = currentRoll === 'admin' ? 'personal' : 'admin';
-  const rollText = nyRoll === 'admin' ? 'Admin' : 'Personal';
+  const rollOrdning = ['personal', 'admin', 'developer'];
+  const idx = rollOrdning.indexOf(currentRoll);
+  const nyRoll = rollOrdning[(idx + 1) % rollOrdning.length];
+  const rollText = nyRoll === 'developer' ? 'Developer' : nyRoll === 'admin' ? 'Admin' : 'Personal';
   if (!confirm(`Byt roll för ${namn} till ${rollText}?`)) return;
   try {
     await sbPatch('anvandare', id, { roll: nyRoll });
