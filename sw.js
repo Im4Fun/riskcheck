@@ -1,4 +1,4 @@
-const CACHE = 'riskcheck-v1';
+const CACHE = 'riskcheck-v2';
 const ASSETS = [
   '/',
   '/index.html',
